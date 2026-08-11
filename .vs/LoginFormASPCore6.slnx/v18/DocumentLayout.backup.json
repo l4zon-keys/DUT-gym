@@ -1,0 +1,100 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\zamal\\source\\repos\\DUT-Gym-e-Application2\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0A38DB01-5220-4DBA-9AB6-DBD13AD1A74E}|LoginFormASPCore6.csproj|c:\\users\\zamal\\onedrive\\desktop\\dut gym e-application2\\dut-gym-e-application2\\views\\home\\signup.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A38DB01-5220-4DBA-9AB6-DBD13AD1A74E}|LoginFormASPCore6.csproj|c:\\users\\zamal\\onedrive\\desktop\\dut gym e-application2\\dut-gym-e-application2\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A38DB01-5220-4DBA-9AB6-DBD13AD1A74E}|LoginFormASPCore6.csproj|c:\\users\\zamal\\onedrive\\desktop\\dut gym e-application2\\dut-gym-e-application2\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A38DB01-5220-4DBA-9AB6-DBD13AD1A74E}|LoginFormASPCore6.csproj|c:\\users\\zamal\\onedrive\\desktop\\dut gym e-application2\\dut-gym-e-application2\\models\\mydbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A38DB01-5220-4DBA-9AB6-DBD13AD1A74E}|LoginFormASPCore6.csproj|c:\\users\\zamal\\onedrive\\desktop\\dut gym e-application2\\dut-gym-e-application2\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAKwAAAAAAAAAAAAAAKwAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-08-11T23:22:12.848Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Signup.cshtml",
+              "DocumentMoniker": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Home\\Signup.cshtml",
+              "RelativeDocumentMoniker": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Home\\Signup.cshtml",
+              "ToolTip": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Home\\Signup.cshtml",
+              "RelativeToolTip": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Views\\Home\\Signup.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAO0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-08-11T23:14:00.836Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAAKAAAAAAAAAAAADwv7sAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-11T23:13:18.246Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MyDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\MyDbContext.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\MyDbContext.cs",
+              "ToolTip": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\MyDbContext.cs",
+              "RelativeToolTip": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\MyDbContext.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAAADoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-11T23:11:25.724Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\User.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\User.cs",
+              "ToolTip": "C:\\Users\\zamal\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\User.cs",
+              "RelativeToolTip": "..\\..\\..\\OneDrive\\Desktop\\DUT Gym e-Application2\\DUT-Gym-e-Application2\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-11T23:10:35.632Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

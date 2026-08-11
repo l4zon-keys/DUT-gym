@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 3,
   "targets": {
     "net6.0": {
       "Humanizer/2.14.1": {
@@ -10693,11 +10693,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\zamal\\LoginAndSignUpPage\\LoginFormASPCore6.csproj",
+      "projectUniqueName": "C:\\Users\\zamal\\source\\repos\\DUT-Gym-e-Application2\\LoginFormASPCore6.csproj",
       "projectName": "LoginFormASPCore6",
-      "projectPath": "C:\\Users\\zamal\\LoginAndSignUpPage\\LoginFormASPCore6.csproj",
+      "projectPath": "C:\\Users\\zamal\\source\\repos\\DUT-Gym-e-Application2\\LoginFormASPCore6.csproj",
       "packagesPath": "C:\\Users\\zamal\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\zamal\\LoginAndSignUpPage\\obj\\",
+      "outputPath": "C:\\Users\\zamal\\source\\repos\\DUT-Gym-e-Application2\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -10717,7 +10717,6 @@
       },
       "frameworks": {
         "net6.0": {
-          "framework": "net6.0",
           "targetAlias": "net6.0",
           "projectReferences": {}
         }
@@ -10736,7 +10735,6 @@
     },
     "frameworks": {
       "net6.0": {
-        "framework": "net6.0",
         "targetAlias": "net6.0",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Design": {
@@ -10771,24 +10769,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
