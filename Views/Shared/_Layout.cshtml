@@ -3,16 +3,21 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LoginFormASPCore6</title>
+    <title>@ViewData["Title"] - Dut Gym e-Application</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LoginFormASPCore6.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var isAuthenticated = Context.Session.GetString("UserSession") != null;
+    }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 bg-body-tertiary ">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LoginFormASPCore6</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Dut Gym e-Application</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -20,27 +25,28 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+                        @if (isAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Dashboard">Dashboard</a>
+                            </li>
+                        }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
                 </div>
                 <div>
-                    <span id="user"></span>
-                    
-                    @{
-                        if (ViewData["MySession"] != null)
-                        {
-                            <button class="btn btn-outline-primary"><a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Logout">Logout</a></button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-outline-primary"><a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Login">Login</a></button>
-                        }
+                    @if (isAuthenticated)
+                    {
+                        <a class="btn btn-outline-primary" asp-area="" asp-controller="Home" asp-action="Logout">Logout</a>
                     }
-                    
+                    else
+                    {
+                        <a class="btn btn-gradient" asp-area="" asp-controller="Home" asp-action="Login">Login</a>
+                    }
                 </div>
             </div>
         </nav>
@@ -53,7 +59,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - LoginFormASPCore6 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 - Dut Gym e-Application - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -62,3 +68,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

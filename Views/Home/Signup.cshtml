@@ -4,55 +4,57 @@
     ViewData["Title"] = "Signup";
 }
 
-
-<section class="vh-80 gradient-custom">
-    <div class="container py-5 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
+<section class="auth-section">
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
             <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-                <div class="card bg-dark text-white" style="border-radius: 1rem;">
-                    <div class="card-body p-5 text-center">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1>Create Account</h1>
+                        <p>Register with your DUT student or staff email</p>
+                    </div>
+                    <div class="auth-body">
+                        <form asp-action="Signup">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        <div class="mb-md-3 mt-md-1 pb-5">
-                            <h1 class="fw-bold mb-5 text-uppercase">Signup</h1>
+                            <div class="mb-3">
+                                <label asp-for="EmpName" class="form-label"></label>
+                                <input asp-for="EmpName" class="form-control" placeholder="Full name" />
+                                <span asp-validation-for="EmpName" class="text-danger"></span>
+                            </div>
 
-                            <form asp-action="Signup">
-                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                <div class="form-outline form-white mb-4">
-                                    @* <label asp-for="EmpName" class="form-label"></label> *@
-                                    <input asp-for="EmpName" class="form-control form-control-lg" placeholder="Name"/>
-                                    <span asp-validation-for="EmpName" class="text-danger"></span>
+                            <div class="mb-3">
+                                <label asp-for="Gender" class="form-label"></label>
+                                <select name="Gender" asp-items="@ViewBag.Gender" class="form-control">
+                                    <option value="">Select gender</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" id="Email" class="form-control" placeholder="name@dut4life.ac.za or name@dut.ac.za" autocomplete="username" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div id="roleHint" class="role-hint"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="Create a password" autocomplete="new-password" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <div class="form-text-hint mt-1">
+                                    At least 8 characters, with an uppercase letter, a lowercase letter, a number, and a special character.
                                 </div>
-                                <div class="form-outline form-white mb-4">
-                                    @* <label asp-for="Gender" class="form-label"></label> *@
-                                   @*  <input asp-for="Gender" class="form-control form-control-lg" placeholder="Gender"/> *@
-                                    <select name="Gender" asp-items="@ViewBag.Gender" class="form-control form-control-lg">
-                                        <option value="">Select Gender</option>
-                                    </select>
-                                    <span asp-validation-for="Gender" class="text-danger"></span>
-                                </div>
-                                <div class="form-outline form-white mb-4">
-                                    @* <label asp-for="Age" class="form-label"></label> *@
-                                    <input asp-for="Age" class="form-control form-control-lg" placeholder="Age"/>                                    
-                                    <span asp-validation-for="Age" class="text-danger"></span>
-                                </div>
-                                <div class="form-outline form-white mb-4">
-                                    @* <label asp-for="Email" class="form-label"></label> *@
-                                    <input asp-for="Email" class="form-control form-control-lg" placeholder="Email"/>
-                                    <span asp-validation-for="Email" class="text-danger"></span>
-                                </div>
-                                <div class="form-outline form-white mb-4">
-                                    @* <label asp-for="Password" class="form-label"></label> *@
-                                    <input asp-for="Password" class="form-control form-control-lg" placeholder="Password"/>
-                                    <span asp-validation-for="Password" class="text-danger"></span>
-                                </div>
-                                    <input type="submit" value="Signup" class="btn btn-outline-light btn-lg px-5" />  
-                                <div class="mt-5">
-                                    <p class="mb-0">
-                                        Already have an account? <a asp-action="Login" class="text-white-50 fw-bold">Login</a>
-                                    </p>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-gradient btn-lg w-100 mt-2">Create Account</button>
+
+                            <div class="mt-4 text-center">
+                                <p class="mb-0 form-text-hint">
+                                    Already have an account? <a asp-action="Login" class="fw-bold">Sign in</a>
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -60,4 +62,40 @@
     </div>
 </section>
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        (function () {
+            var emailInput = document.getElementById("Email");
+            var roleHint = document.getElementById("roleHint");
+            var studentDomain = "@@dut4life.ac.za";
+            var staffDomain = "@@dut.ac.za";
 
+            function updateHint() {
+                var value = (emailInput.value || "").trim().toLowerCase();
+                roleHint.className = "role-hint";
+
+                if (value.length === 0) {
+                    roleHint.textContent = "";
+                    return;
+                }
+
+                if (value.endsWith(studentDomain)) {
+                    roleHint.textContent = "Detected role: Student";
+                    roleHint.classList.add("role-student");
+                } else if (value.endsWith(staffDomain)) {
+                    roleHint.textContent = "Detected role: Staff";
+                    roleHint.classList.add("role-staff");
+                } else {
+                    roleHint.textContent = "Use your DUT student or staff email to continue.";
+                    roleHint.classList.add("role-unknown");
+                }
+            }
+
+            emailInput.addEventListener("input", updateHint);
+            updateHint();
+        })();
+    </script>
+}

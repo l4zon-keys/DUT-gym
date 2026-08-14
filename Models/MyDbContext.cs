@@ -31,20 +31,33 @@ namespace LoginFormASPCore6.Models
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Email)
-                    .HasMaxLength(20)
+                    .IsRequired()
+                    .HasMaxLength(100)
                     .IsUnicode(false);
 
+                entity.HasIndex(e => e.Email)
+                    .IsUnique();
+
                 entity.Property(e => e.EmpName)
+                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Gender)
+                    .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Password)
-                    .HasMaxLength(20)
+                    .IsRequired()
+                    .HasMaxLength(100)
                     .IsUnicode(false);
+
+                entity.Property(e => e.Role)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasDefaultValue(EmailRoleHelper.UnknownRole);
             });
 
             OnModelCreatingPartial(modelBuilder);

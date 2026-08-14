@@ -1,8 +1,22 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+    var isAuthenticated = Context.Session.GetString("UserSession") != null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero">
+    <h1>Dut Gym e-Application</h1>
+    <p>
+        The official online portal for DUT students and staff to register,
+        sign in, and manage their gym membership access in one place.
+    </p>
+
+    @if (isAuthenticated)
+    {
+        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-gradient btn-lg px-5">Go to Dashboard</a>
+    }
+    else
+    {
+        <a asp-controller="Home" asp-action="Login" class="btn btn-gradient btn-lg px-5 me-2">Sign In</a>
+        <a asp-controller="Home" asp-action="Signup" class="btn btn-outline-primary btn-lg px-5">Create Account</a>
+    }
 </div>
