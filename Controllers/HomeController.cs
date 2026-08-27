@@ -4,16 +4,22 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Identity;
+using LoginFormASPCore6.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace LoginFormASPCore6.Controllers
 {
     public class HomeController : Controller
     {
         private readonly MyDbContext context;
+        private readonly GymCapacityService capacityService;
+        private readonly PasswordHasher<User> passwordHasher = new();
 
-        public HomeController(MyDbContext context)
+        public HomeController(MyDbContext context, GymCapacityService capacityService)
         {
             this.context = context;
+            this.capacityService = capacityService;
         }
 
         public IActionResult Index()
@@ -31,15 +37,16 @@ namespace LoginFormASPCore6.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Login(User u)
         {
-            var myUser = context.Users
-                .Where(x => x.Email == u.Email && x.Password == u.Password)
-                .FirstOrDefault();
+            var myUser = context.Users.FirstOrDefault(x => x.Email == u.Email);
+            var verified = myUser != null
+                && passwordHasher.VerifyHashedPassword(myUser, myUser.Password, u.Password) != PasswordVerificationResult.Failed;
 
-            if (myUser != null)
+            if (verified)
             {
-                HttpContext.Session.SetString("UserSession", myUser.EmpName);
+                HttpContext.Session.SetString("UserSession", myUser!.EmpName);
                 HttpContext.Session.SetString("UserEmail", myUser.Email);
                 HttpContext.Session.SetString("UserRole", myUser.Role);
 
@@ -64,6 +71,7 @@ namespace LoginFormASPCore6.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Signup(User u)
         {
             // Role is always derived from the email domain, never trusted from the form.
@@ -80,8 +88,14 @@ namespace LoginFormASPCore6.Controllers
                 ModelState.AddModelError(nameof(u.Email), "An account with this email already exists.");
             }
 
+            if (context.Users.Any(x => x.StudentNumber == u.StudentNumber))
+            {
+                ModelState.AddModelError(nameof(u.StudentNumber), "An account with this student/staff number already exists.");
+            }
+
             if (ModelState.IsValid)
             {
+                u.Password = passwordHasher.HashPassword(u, u.Password);
                 await context.Users.AddAsync(u);
                 await context.SaveChangesAsync();
                 TempData["Success"] = "Account created successfully. Please sign in.";
@@ -110,7 +124,7 @@ namespace LoginFormASPCore6.Controllers
             return RedirectToRoleDashboard();
         }
 
-        public IActionResult StudentDashboard()
+        public async Task<IActionResult> StudentDashboard()
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -121,6 +135,14 @@ namespace LoginFormASPCore6.Controllers
             {
                 return RedirectToRoleDashboard(user.Role);
             }
+
+            ViewBag.Capacity = await capacityService.GetCurrentStatusAsync();
+            ViewBag.Membership = await context.Memberships
+                .Include(m => m.Plan)
+                .Where(m => m.UserId == user.Id)
+                .OrderByDescending(m => m.AppliedAt)
+                .FirstOrDefaultAsync();
+
             return View(user);
         }
 

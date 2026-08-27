@@ -1,0 +1,15 @@
+@model CapacityStatus
+
+@{
+    var levelClass = Model.Level switch
+    {
+        CapacityLevel.Light => "capacity-light",
+        CapacityLevel.Moderate => "capacity-moderate",
+        _ => "capacity-heavy"
+    };
+}
+
+<span class="capacity-badge @levelClass">
+    <span class="capacity-dot"></span>
+    Gym is @Model.Level.ToString() (@Model.CurrentOccupancy / @Model.Threshold)
+</span>

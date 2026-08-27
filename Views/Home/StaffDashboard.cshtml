@@ -28,6 +28,15 @@
                 <span class="info-label">Role</span>
                 <span class="info-value">Staff</span>
             </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+                <a asp-controller="Staff" asp-action="CheckIn" class="btn btn-gradient">Check-In Desk</a>
+                <a asp-controller="Staff" asp-action="PendingMemberships" class="btn btn-outline-primary">Pending Memberships</a>
+                <a asp-controller="Staff" asp-action="Capacity" class="btn btn-outline-primary">Gym Capacity</a>
+                <a asp-controller="Plans" asp-action="Manage" class="btn btn-outline-primary">Manage Plans</a>
+                <a asp-controller="Venues" asp-action="Manage" class="btn btn-outline-primary">Manage Venues</a>
+                <a asp-controller="Sessions" asp-action="Manage" class="btn btn-outline-primary">Manage Sessions</a>
+            </div>
         </div>
     </div>
 </div>

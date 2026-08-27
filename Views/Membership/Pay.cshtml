@@ -1,0 +1,25 @@
+@model Membership
+
+@{
+    ViewData["Title"] = "Pay for Membership";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto" style="max-width: 560px;">
+        <h1 class="mb-1">Pay for Your Membership</h1>
+        <p class="form-text-hint mb-4">@Model.Plan!.Name - R@(Model.Plan.Price.ToString("0.00")) for @Model.Plan.DurationMonths month(s)</p>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form asp-action="PayWithGateway" asp-route-id="@Model.Id" method="post" class="mb-3">
+            <button type="submit" class="btn btn-gradient w-100">Pay Now (Online)</button>
+        </form>
+
+        <div class="text-center form-text-hint mb-3">or</div>
+
+        <a asp-action="UploadProof" asp-route-id="@Model.Id" class="btn btn-outline-primary w-100">Upload Proof of Payment</a>
+    </div>
+</div>

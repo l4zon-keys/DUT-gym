@@ -1,0 +1,68 @@
+@model List<Membership>
+
+@{
+    ViewData["Title"] = "Pending Memberships";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Pending Memberships</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">Nothing waiting for review right now.</p>
+    }
+
+    @foreach (var membership in Model)
+    {
+        var latestPayment = membership.Payments.OrderByDescending(p => p.SubmittedAt).FirstOrDefault();
+
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@membership.User!.EmpName <span class="form-text-hint">(@membership.User.StudentNumber)</span></h5>
+                    <p class="mb-1">@membership.Plan!.Name - R@(membership.Plan.Price.ToString("0.00"))</p>
+                    <p class="form-text-hint mb-1">Campus: @membership.Campus</p>
+                    <p class="form-text-hint mb-1">Emergency contact: @membership.EmergencyContactName (@membership.EmergencyContactPhone)</p>
+                    @if (!string.IsNullOrWhiteSpace(membership.MedicalConditions))
+                    {
+                        <p class="form-text-hint mb-1">Medical: @membership.MedicalConditions</p>
+                    }
+                    <p class="form-text-hint mb-0">Applied: @membership.AppliedAt.ToString("g")</p>
+
+                    @if (latestPayment == null)
+                    {
+                        <p class="mt-2 mb-0"><em>No payment submitted yet.</em></p>
+                    }
+                    else if (latestPayment.Method == PaymentMethod.ManualProof)
+                    {
+                        <p class="mt-2 mb-0">
+                            Proof of payment:
+                            <a href="~/@latestPayment.ProofFilePath" target="_blank">View file</a>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="mt-2 mb-0">Payment method: @latestPayment.Method (@latestPayment.Status)</p>
+                    }
+                </div>
+
+                <div class="d-flex flex-column gap-2" style="min-width: 220px;">
+                    <form asp-action="ReviewMembership" asp-route-id="@membership.Id" method="post">
+                        <input type="hidden" name="approve" value="true" />
+                        <button type="submit" class="btn btn-gradient w-100" @(latestPayment == null ? "disabled" : "")>Approve</button>
+                    </form>
+                    <form asp-action="ReviewMembership" asp-route-id="@membership.Id" method="post">
+                        <input type="hidden" name="approve" value="false" />
+                        <input type="text" name="reason" class="form-control form-control-sm mb-2" placeholder="Rejection reason" />
+                        <button type="submit" class="btn btn-outline-primary w-100">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

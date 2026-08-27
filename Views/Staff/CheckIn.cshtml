@@ -1,0 +1,48 @@
+@model List<User>
+
+@{
+    ViewData["Title"] = "Check-In";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Student Check-In</h1>
+
+    <form method="get" class="d-flex gap-2 mb-4" style="max-width: 480px;">
+        <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Search by student number or email" />
+        <button type="submit" class="btn btn-gradient">Search</button>
+    </form>
+
+    @if (ViewBag.Query != null && !Model.Any())
+    {
+        <p class="text-muted">No students matched that search.</p>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student Number</th>
+                        <th>Email</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model)
+                    {
+                        <tr>
+                            <td>@student.EmpName</td>
+                            <td>@student.StudentNumber</td>
+                            <td>@student.Email</td>
+                            <td class="text-end">
+                                <a asp-action="CheckInDetail" asp-route-userId="@student.Id" class="btn btn-sm btn-gradient">Open</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

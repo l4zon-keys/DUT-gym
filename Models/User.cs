@@ -18,6 +18,11 @@ namespace LoginFormASPCore6.Models
         [DisplayName("Gender")]
         public string Gender { get; set; } = null!;
 
+        [Required(ErrorMessage = "Please enter your DUT student/staff number.")]
+        [DisplayName("Student/Staff Number")]
+        [StringLength(20, MinimumLength = 4, ErrorMessage = "Student/staff number must be between 4 and 20 characters.")]
+        public string StudentNumber { get; set; } = null!;
+
         [Required(ErrorMessage = "Please enter your DUT email address.")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         [InstitutionEmail(ErrorMessage = "Only DUT student (@dut4life.ac.za) or staff (@dut.ac.za) email addresses may be used.")]

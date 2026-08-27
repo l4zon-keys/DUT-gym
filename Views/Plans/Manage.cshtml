@@ -1,0 +1,54 @@
+@model List<MembershipPlan>
+
+@{
+    ViewData["Title"] = "Manage Plans";
+}
+
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Membership Plans</h1>
+        <a asp-action="Create" class="btn btn-gradient">New Plan</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="section-card">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var plan in Model)
+                {
+                    <tr>
+                        <td>@plan.Name</td>
+                        <td>R@(plan.Price.ToString("0.00"))</td>
+                        <td>@plan.DurationMonths month(s)</td>
+                        <td>
+                            <span class="status-badge @(plan.IsActive ? "status-active" : "status-expired")">
+                                @(plan.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="ToggleActive" asp-route-id="@plan.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    @(plan.IsActive ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

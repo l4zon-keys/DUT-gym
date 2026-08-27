@@ -1,7 +1,10 @@
 ﻿@model LoginFormASPCore6.Models.User
+@using LoginFormASPCore6.Services
 
 @{
     ViewData["Title"] = "Student Dashboard";
+    var membership = ViewBag.Membership as Membership;
+    var capacity = ViewBag.Capacity as CapacityStatus;
 }
 
 <div class="py-4">
@@ -12,21 +15,51 @@
             <p>This is your DUT Gym membership overview.</p>
         </div>
         <div class="dashboard-body">
+            @if (capacity != null)
+            {
+                <div class="mb-3">
+                    <partial name="_CapacityBadge" model="capacity" />
+                </div>
+            }
+
             <div class="info-row">
                 <span class="info-label">Full Name</span>
                 <span class="info-value">@Model.EmpName</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Gender</span>
-                <span class="info-value">@Model.Gender</span>
+                <span class="info-label">Student Number</span>
+                <span class="info-value">@Model.StudentNumber</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Email</span>
                 <span class="info-value">@Model.Email</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Role</span>
-                <span class="info-value">Student</span>
+                <span class="info-label">Membership</span>
+                <span class="info-value">
+                    @if (membership == null)
+                    {
+                        <span>Not applied</span>
+                    }
+                    else
+                    {
+                        var statusClass = membership.Status == MembershipStatus.Active ? "status-active"
+                            : membership.Status == MembershipStatus.Pending ? "status-pending" : "status-rejected";
+                        <span class="status-badge @statusClass">@membership.Status</span>
+                    }
+                </span>
+            </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+                <a asp-controller="Plans" asp-action="Index" class="btn btn-outline-primary">Browse Plans</a>
+                @if (membership == null || membership.Status == MembershipStatus.Rejected)
+                {
+                    <a asp-controller="Membership" asp-action="Apply" class="btn btn-gradient">Apply for Membership</a>
+                }
+                else
+                {
+                    <a asp-controller="Membership" asp-action="Status" class="btn btn-gradient">View Membership Status</a>
+                }
             </div>
         </div>
     </div>

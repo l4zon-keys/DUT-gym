@@ -1,0 +1,51 @@
+@model Membership
+
+@{
+    ViewData["Title"] = "Membership Receipt";
+    Layout = "_Layout";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto" style="max-width: 640px;">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="mb-0">Digital Receipt</h1>
+                <p class="form-text-hint mb-0">Dut Gym e-Application</p>
+            </div>
+            <span class="status-badge status-active">Active</span>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Receipt No.</span>
+            <span class="info-value">MEM-@Model.Id.ToString("D6")</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Member</span>
+            <span class="info-value">@Model.User!.EmpName</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Student/Staff Number</span>
+            <span class="info-value">@Model.User.StudentNumber</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Plan</span>
+            <span class="info-value">@Model.Plan!.Name</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Amount Paid</span>
+            <span class="info-value">R@(Model.Plan.Price.ToString("0.00"))</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Start Date</span>
+            <span class="info-value">@Model.StartDate?.ToString("d")</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Expiry Date</span>
+            <span class="info-value">@Model.ExpiryDate?.ToString("d")</span>
+        </div>
+
+        <div class="mt-4 no-print">
+            <button onclick="window.print()" class="btn btn-gradient">Print / Save as PDF</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+@model List<MembershipPlan>
+
+@{
+    ViewData["Title"] = "Membership Plans";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Membership Plans</h1>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No membership plans are available right now. Please check back later.</p>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var plan in Model)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="plan-card">
+                        <h5>@plan.Name</h5>
+                        <div class="plan-price">R@(plan.Price.ToString("0.00"))</div>
+                        <p class="form-text-hint mb-2">@plan.DurationMonths month(s)</p>
+                        @if (!string.IsNullOrWhiteSpace(plan.Description))
+                        {
+                            <p>@plan.Description</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="mt-4">
+            <a asp-controller="Membership" asp-action="Apply" class="btn btn-gradient">Apply for Membership</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,62 @@
+@model Membership
+
+@{
+    ViewData["Title"] = "Apply for Membership";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto" style="max-width: 640px;">
+        <h1 class="mb-1">Apply for Gym Membership</h1>
+        <p class="form-text-hint mb-4">Fill in your details below to submit your membership application.</p>
+
+        <form asp-action="Apply" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="PlanId" class="form-label"></label>
+                <select asp-for="PlanId" asp-items="@((IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Plans)" class="form-control">
+                    <option value="">Select a plan</option>
+                </select>
+                <span asp-validation-for="PlanId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Campus" class="form-label"></label>
+                <input asp-for="Campus" class="form-control" placeholder="e.g. Steve Biko Campus" />
+                <span asp-validation-for="Campus" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EmergencyContactName" class="form-label"></label>
+                <input asp-for="EmergencyContactName" class="form-control" />
+                <span asp-validation-for="EmergencyContactName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EmergencyContactPhone" class="form-label"></label>
+                <input asp-for="EmergencyContactPhone" class="form-control" />
+                <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MedicalConditions" class="form-label"></label>
+                <textarea asp-for="MedicalConditions" class="form-control" rows="3" placeholder="List any medical conditions we should be aware of, or leave blank"></textarea>
+                <span asp-validation-for="MedicalConditions" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-4">
+                <input asp-for="MedicalConsentAccepted" class="form-check-input" />
+                <label asp-for="MedicalConsentAccepted" class="form-check-label"></label>
+                <span asp-validation-for="MedicalConsentAccepted" class="text-danger d-block"></span>
+            </div>
+
+            <button type="submit" class="btn btn-gradient w-100">Submit Application</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

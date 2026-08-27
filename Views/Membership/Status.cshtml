@@ -1,0 +1,88 @@
+@model Membership
+
+@{
+    ViewData["Title"] = "Membership Status";
+    var statusClass = Model == null ? "" : Model.Status switch
+    {
+        MembershipStatus.Active => "status-active",
+        MembershipStatus.Pending => "status-pending",
+        _ => "status-rejected"
+    };
+}
+
+<div class="py-4">
+    <div class="dashboard-card mx-auto" style="max-width: 640px;">
+        <div class="dashboard-banner">
+            <h1>Membership Status</h1>
+        </div>
+        <div class="dashboard-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            @if (Model == null)
+            {
+                <p>You haven't applied for gym membership yet.</p>
+                <a asp-action="Apply" class="btn btn-gradient">Apply Now</a>
+            }
+            else
+            {
+                <div class="info-row">
+                    <span class="info-label">Plan</span>
+                    <span class="info-value">@Model.Plan!.Name</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value"><span class="status-badge @statusClass">@Model.Status</span></span>
+                </div>
+
+                @if (Model.Status == MembershipStatus.Active)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Start Date</span>
+                        <span class="info-value">@Model.StartDate?.ToString("d")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Expiry Date</span>
+                        <span class="info-value">@Model.ExpiryDate?.ToString("d")</span>
+                    </div>
+                    <div class="mt-4">
+                        <a asp-action="Receipt" asp-route-id="@Model.Id" class="btn btn-gradient">View / Download Receipt</a>
+                    </div>
+                }
+                else if (Model.Status == MembershipStatus.Pending)
+                {
+                    var latestPayment = Model.Payments.OrderByDescending(p => p.SubmittedAt).FirstOrDefault();
+                    if (latestPayment == null)
+                    {
+                        <p class="mt-3">Your application has been submitted. Please complete payment to finish your application.</p>
+                        <a asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-gradient">Pay Now</a>
+                    }
+                    else if (latestPayment.Method == PaymentMethod.ManualProof)
+                    {
+                        <p class="mt-3">Your proof of payment has been submitted and is awaiting staff review.</p>
+                    }
+                    else
+                    {
+                        <p class="mt-3">Your payment is being processed.</p>
+                    }
+                }
+                else if (Model.Status == MembershipStatus.Rejected)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Reason</span>
+                        <span class="info-value">@Model.RejectionReason</span>
+                    </div>
+                    <div class="mt-4">
+                        <a asp-action="Apply" class="btn btn-gradient">Apply Again</a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

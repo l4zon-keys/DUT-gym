@@ -259,3 +259,70 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     color: var(--dut-text);
 }
+
+/* Status / capacity badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.status-pending { background: #fff3cd; color: #7a5b00; }
+.status-active { background: #d1e7dd; color: #146c43; }
+.status-rejected, .status-expired { background: #f8d7da; color: #b02a37; }
+
+.capacity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 2rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.capacity-light { background: #d1e7dd; color: #146c43; }
+.capacity-moderate { background: #fff3cd; color: #7a5b00; }
+.capacity-heavy { background: #f8d7da; color: #b02a37; }
+
+.capacity-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Plan / card grids */
+.plan-card {
+    background: #fff;
+    border: 1px solid var(--dut-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 6px 24px rgba(10, 38, 71, 0.05);
+}
+
+.plan-price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--dut-blue-dark);
+}
+
+.section-card {
+    background: #fff;
+    border: 1px solid var(--dut-border);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    box-shadow: 0 6px 24px rgba(10, 38, 71, 0.05);
+}
+
+/* Printable receipt */
+@media print {
+    header, footer, .no-print {
+        display: none !important;
+    }
+}

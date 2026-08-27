@@ -1,0 +1,291 @@
+using LoginFormASPCore6.Models;
+using LoginFormASPCore6.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace LoginFormASPCore6.Controllers
+{
+    public class MembershipController : AppControllerBase
+    {
+        private static readonly string[] AllowedProofExtensions = { ".pdf", ".jpg", ".jpeg", ".png" };
+        private const long MaxProofFileBytes = 5 * 1024 * 1024;
+
+        private readonly IPaymentGateway gateway;
+        private readonly IWebHostEnvironment environment;
+
+        public MembershipController(MyDbContext db, IPaymentGateway gateway, IWebHostEnvironment environment) : base(db)
+        {
+            this.gateway = gateway;
+            this.environment = environment;
+        }
+
+        // --- Apply (PB-3) -----------------------------------------------
+
+        public async Task<IActionResult> Apply()
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var existing = await Db.Memberships
+                .Where(m => m.UserId == user!.Id && (m.Status == MembershipStatus.Pending || m.Status == MembershipStatus.Active))
+                .FirstOrDefaultAsync();
+            if (existing != null)
+            {
+                return RedirectToAction(nameof(Status));
+            }
+
+            await PopulatePlans();
+            return View(new Membership());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Apply(Membership model)
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            // Fields the student must not be able to set directly.
+            ModelState.Remove(nameof(Membership.UserId));
+            ModelState.Remove(nameof(Membership.Status));
+
+            var plan = await Db.MembershipPlans.FindAsync(model.PlanId);
+            if (plan == null || !plan.IsActive)
+            {
+                ModelState.AddModelError(nameof(model.PlanId), "Please select a valid membership plan.");
+            }
+
+            if (!model.MedicalConsentAccepted)
+            {
+                ModelState.AddModelError(nameof(model.MedicalConsentAccepted), "You must accept the medical indemnity consent to apply.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await PopulatePlans();
+                return View(model);
+            }
+
+            model.UserId = user!.Id;
+            model.Status = MembershipStatus.Pending;
+            model.AppliedAt = DateTime.UtcNow;
+
+            Db.Memberships.Add(model);
+            await Db.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Pay), new { id = model.Id });
+        }
+
+        private async Task PopulatePlans()
+        {
+            var plans = await Db.MembershipPlans.Where(p => p.IsActive).OrderBy(p => p.Price).ToListAsync();
+            ViewBag.Plans = plans.Select(p => new SelectListItem
+            {
+                Value = p.Id.ToString(),
+                Text = $"{p.Name} - R{p.Price:0.00} ({p.DurationMonths} month(s))"
+            });
+        }
+
+        // --- Pay (PB-4) ---------------------------------------------------
+
+        public async Task<IActionResult> Pay(int id)
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null || membership.UserId != user!.Id) return NotFound();
+            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
+
+            return View(membership);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PayWithGateway(int id)
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null || membership.UserId != user!.Id) return NotFound();
+            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
+
+            var payment = new Payment
+            {
+                MembershipId = membership.Id,
+                Method = PaymentMethod.Gateway,
+                Amount = membership.Plan!.Price,
+                Status = PaymentStatus.Pending,
+                GatewayProvider = gateway.ProviderName
+            };
+            Db.Payments.Add(payment);
+            await Db.SaveChangesAsync();
+
+            var returnUrl = Url.Action(nameof(GatewayCallback), "Membership", null, Request.Scheme)!;
+            var cancelUrl = Url.Action(nameof(Pay), "Membership", new { id = membership.Id }, Request.Scheme)!;
+
+            var result = await gateway.InitiatePaymentAsync(new PaymentInitiationRequest
+            {
+                Payment = payment,
+                Plan = membership.Plan!,
+                Student = user!,
+                ReturnUrl = returnUrl,
+                CancelUrl = cancelUrl
+            });
+
+            if (!result.Success || result.RedirectUrl == null)
+            {
+                TempData["Error"] = result.ErrorMessage ?? "Could not start the payment. Please try again.";
+                return RedirectToAction(nameof(Pay), new { id = membership.Id });
+            }
+
+            payment.GatewayReference = result.GatewayReference;
+            await Db.SaveChangesAsync();
+
+            return Redirect(result.RedirectUrl);
+        }
+
+        public async Task<IActionResult> GatewayCallback()
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var callback = await gateway.HandleCallbackAsync(Request);
+            if (!callback.Success)
+            {
+                TempData["Error"] = callback.ErrorMessage ?? "Payment could not be confirmed.";
+                return RedirectToAction(nameof(Status));
+            }
+
+            var payment = await Db.Payments.Include(p => p.Membership).ThenInclude(m => m!.Plan)
+                .FirstOrDefaultAsync(p => p.Id == callback.PaymentId);
+            if (payment == null || payment.Membership == null || payment.Membership.UserId != user!.Id)
+            {
+                return NotFound();
+            }
+
+            payment.Status = PaymentStatus.Verified;
+            payment.VerifiedAt = DateTime.UtcNow;
+            payment.GatewayReference ??= callback.GatewayReference;
+
+            var membership = payment.Membership;
+            membership.Status = MembershipStatus.Active;
+            membership.StartDate = DateTime.UtcNow.Date;
+            membership.ExpiryDate = membership.StartDate.Value.AddMonths(membership.Plan!.DurationMonths);
+
+            await Db.SaveChangesAsync();
+
+            TempData["Success"] = "Payment confirmed - your membership is now active.";
+            return RedirectToAction(nameof(Status));
+        }
+
+        // --- Manual proof of payment (PB-4 alternate path) ----------------
+
+        public async Task<IActionResult> UploadProof(int id)
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null || membership.UserId != user!.Id) return NotFound();
+            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
+
+            return View(membership);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProof(int id, IFormFile proofFile)
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null || membership.UserId != user!.Id) return NotFound();
+            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
+
+            if (proofFile == null || proofFile.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Please choose a file to upload.");
+                return View(membership);
+            }
+
+            var extension = Path.GetExtension(proofFile.FileName).ToLowerInvariant();
+            if (!AllowedProofExtensions.Contains(extension))
+            {
+                ModelState.AddModelError(string.Empty, "Only PDF, JPG, and PNG files are accepted.");
+                return View(membership);
+            }
+
+            if (proofFile.Length > MaxProofFileBytes)
+            {
+                ModelState.AddModelError(string.Empty, "File is too large (5MB max).");
+                return View(membership);
+            }
+
+            var relativeDir = Path.Combine("uploads", "proofs", membership.Id.ToString());
+            var absoluteDir = Path.Combine(environment.WebRootPath, relativeDir);
+            Directory.CreateDirectory(absoluteDir);
+
+            var generatedFileName = $"{Guid.NewGuid():N}{extension}";
+            var absolutePath = Path.Combine(absoluteDir, generatedFileName);
+
+            using (var stream = new FileStream(absolutePath, FileMode.Create))
+            {
+                await proofFile.CopyToAsync(stream);
+            }
+
+            var payment = new Payment
+            {
+                MembershipId = membership.Id,
+                Method = PaymentMethod.ManualProof,
+                Amount = membership.Plan!.Price,
+                Status = PaymentStatus.Pending,
+                ProofFilePath = Path.Combine(relativeDir, generatedFileName).Replace('\\', '/')
+            };
+            Db.Payments.Add(payment);
+            await Db.SaveChangesAsync();
+
+            TempData["Success"] = "Proof of payment submitted. A staff member will review it shortly.";
+            return RedirectToAction(nameof(Status));
+        }
+
+        // --- Status & receipt (PB-6) ---------------------------------------
+
+        public async Task<IActionResult> Status()
+        {
+            var (user, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships
+                .Include(m => m.Plan)
+                .Include(m => m.Payments)
+                .Where(m => m.UserId == user!.Id)
+                .OrderByDescending(m => m.AppliedAt)
+                .FirstOrDefaultAsync();
+
+            return View(membership);
+        }
+
+        public async Task<IActionResult> Receipt(int id)
+        {
+            var (user, redirect) = RequireAnyUser();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships
+                .Include(m => m.Plan)
+                .Include(m => m.User)
+                .Include(m => m.Payments)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (membership == null) return NotFound();
+            if (user!.Role != EmailRoleHelper.StaffRole && membership.UserId != user.Id) return StatusCode(403);
+            if (membership.Status != MembershipStatus.Active) return RedirectToAction(nameof(Status));
+
+            return View(membership);
+        }
+    }
+}

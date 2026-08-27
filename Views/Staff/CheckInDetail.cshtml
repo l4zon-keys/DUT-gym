@@ -1,0 +1,70 @@
+@model User
+@{
+    ViewData["Title"] = "Check-In Detail";
+    var membership = ViewBag.Membership as Membership;
+    var openCheckIn = ViewBag.OpenCheckIn as CheckIn;
+}
+
+<div class="py-4">
+    <div class="dashboard-card mx-auto" style="max-width: 640px;">
+        <div class="dashboard-banner">
+            <span class="role-badge">Student</span>
+            <h1>@Model.EmpName</h1>
+            <p>@Model.StudentNumber - @Model.Email</p>
+        </div>
+        <div class="dashboard-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="info-row">
+                <span class="info-label">Membership</span>
+                <span class="info-value">
+                    @if (membership == null)
+                    {
+                        <span>No membership on record</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge @(membership.Status == MembershipStatus.Active ? "status-active" : "status-pending")">@membership.Status</span>
+                    }
+                </span>
+            </div>
+
+            @if (membership?.Status == MembershipStatus.Active)
+            {
+                <div class="info-row">
+                    <span class="info-label">Expires</span>
+                    <span class="info-value">@membership.ExpiryDate?.ToString("d")</span>
+                </div>
+            }
+
+            <div class="info-row">
+                <span class="info-label">Currently in gym</span>
+                <span class="info-value">@(openCheckIn != null ? "Yes, since " + openCheckIn.CheckInTime.ToString("t") : "No")</span>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                @if (openCheckIn == null)
+                {
+                    <form asp-action="CheckInStudent" method="post">
+                        <input type="hidden" name="userId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-gradient">Check In</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-action="CheckOutStudent" method="post">
+                        <input type="hidden" name="userId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-primary">Check Out</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

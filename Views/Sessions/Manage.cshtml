@@ -1,0 +1,50 @@
+@model List<Session>
+
+@{
+    ViewData["Title"] = "Manage Sessions";
+}
+
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Sessions</h1>
+        <a asp-action="Create" class="btn btn-gradient">New Session</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="section-card">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Venue</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Capacity</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var session in Model)
+                {
+                    <tr>
+                        <td>@session.Title</td>
+                        <td>@session.Venue?.Name</td>
+                        <td>@session.StartTime.ToString("g")</td>
+                        <td>@session.EndTime.ToString("g")</td>
+                        <td>@session.Capacity</td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@session.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@session.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+@model CapacityStatus
+
+@{
+    ViewData["Title"] = "Gym Capacity";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Live Gym Capacity</h1>
+
+    <div class="section-card mx-auto text-center" style="max-width: 480px;">
+        <partial name="_CapacityBadge" model="Model" />
+
+        <div class="mt-4">
+            <div class="info-row">
+                <span class="info-label">Currently checked in</span>
+                <span class="info-value">@Model.CurrentOccupancy</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Capacity threshold</span>
+                <span class="info-value">@Model.Threshold</span>
+            </div>
+        </div>
+
+        <a asp-action="CheckIn" class="btn btn-gradient mt-3">Go to Check-In</a>
+    </div>
+</div>

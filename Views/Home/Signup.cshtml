@@ -32,6 +32,12 @@
                             </div>
 
                             <div class="mb-3">
+                                <label asp-for="StudentNumber" class="form-label"></label>
+                                <input asp-for="StudentNumber" class="form-control" placeholder="Student or staff number" />
+                                <span asp-validation-for="StudentNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
                                 <label asp-for="Email" class="form-label"></label>
                                 <input asp-for="Email" id="Email" class="form-control" placeholder="name@dut4life.ac.za or name@dut.ac.za" autocomplete="username" />
                                 <span asp-validation-for="Email" class="text-danger"></span>
