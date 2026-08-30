@@ -26,7 +26,7 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var pending = await Db.Users
-                .Where(u => u.Role == EmailRoleHelper.TrainerRole && u.TrainerApprovalStatus == TrainerApprovalStatus.Pending)
+                .Where(u => u.Role == EmailRoleHelper.TrainerRole && u.ApprovalStatus == ApprovalStatus.Pending)
                 .OrderBy(u => u.EmpName)
                 .ToListAsync();
 
@@ -43,7 +43,7 @@ namespace LoginFormASPCore6.Controllers
             var trainer = await Db.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == EmailRoleHelper.TrainerRole);
             if (trainer == null) return NotFound();
 
-            trainer.TrainerApprovalStatus = approve ? TrainerApprovalStatus.Approved : TrainerApprovalStatus.Rejected;
+            trainer.ApprovalStatus = approve ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
             await Db.SaveChangesAsync();
 
             await emailSender.SendAsync(trainer.Email,
@@ -54,6 +54,44 @@ namespace LoginFormASPCore6.Controllers
 
             TempData["Success"] = approve ? "Trainer approved." : "Trainer application rejected.";
             return RedirectToAction(nameof(PendingTrainers));
+        }
+
+        // --- Staff applications ----------------------------------------------
+
+        public async Task<IActionResult> PendingStaff()
+        {
+            var (_, redirect) = RequireAdmin();
+            if (redirect != null) return redirect;
+
+            var pending = await Db.Users
+                .Where(u => u.Role == EmailRoleHelper.StaffRole && u.ApprovalStatus == ApprovalStatus.Pending)
+                .OrderBy(u => u.EmpName)
+                .ToListAsync();
+
+            return View(pending);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReviewStaff(int id, bool approve)
+        {
+            var (_, redirect) = RequireAdmin();
+            if (redirect != null) return redirect;
+
+            var staff = await Db.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == EmailRoleHelper.StaffRole);
+            if (staff == null) return NotFound();
+
+            staff.ApprovalStatus = approve ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+            await Db.SaveChangesAsync();
+
+            await emailSender.SendAsync(staff.Email,
+                approve ? "Staff application approved" : "Staff application rejected",
+                approve
+                    ? "Your staff application has been approved. You can now log in and access the staff dashboard."
+                    : "Your staff application was not approved.");
+
+            TempData["Success"] = approve ? "Staff member approved." : "Staff application rejected.";
+            return RedirectToAction(nameof(PendingStaff));
         }
 
         // --- Attendance & usage reports (PB-8) -------------------------------

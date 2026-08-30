@@ -1,6 +1,8 @@
 namespace LoginFormASPCore6.Models
 {
-    public enum TrainerApprovalStatus
+    // Shared by any role that needs Admin sign-off before dashboard access -
+    // currently Trainer and Staff. Student and Admin are never gated by this.
+    public enum ApprovalStatus
     {
         Pending,
         Approved,

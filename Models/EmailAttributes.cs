@@ -45,7 +45,7 @@ namespace LoginFormASPCore6.Models
         // Admin has every Staff permission plus admin-only ones (see AppControllerBase).
         public const string AdminRole = "Admin";
         // Self-applied via the "Become a Trainer" form, not domain-derived - starts
-        // TrainerApprovalStatus.Pending until an Admin approves them.
+        // ApprovalStatus.Pending until an Admin approves them (same gate as Staff).
         public const string TrainerRole = "Trainer";
         public const string UnknownRole = "Unknown";
 

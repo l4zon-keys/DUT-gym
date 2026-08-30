@@ -79,7 +79,7 @@ namespace LoginFormASPCore6.Models
                     .IsUnicode(false)
                     .HasDefaultValue(EmailRoleHelper.UnknownRole);
 
-                entity.Property(e => e.TrainerApprovalStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.ApprovalStatus).HasConversion<string>().HasMaxLength(20);
             });
 
             modelBuilder.Entity<MembershipPlan>(entity =>

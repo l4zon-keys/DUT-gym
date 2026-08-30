@@ -39,9 +39,19 @@ namespace LoginFormASPCore6.Controllers
         }
 
         // Admin has every Staff permission plus admin-only ones, so anything gated to
-        // "staff" also lets an Admin through.
-        protected (User? User, IActionResult? Redirect) RequireStaff() =>
-            RequireRole(EmailRoleHelper.StaffRole, EmailRoleHelper.AdminRole);
+        // "staff" also lets an Admin through. A Staff account still needs Admin
+        // approval first, though - Admin itself is manually promoted and never
+        // gated by ApprovalStatus.
+        protected (User? User, IActionResult? Redirect) RequireStaff()
+        {
+            var (user, redirect) = RequireRole(EmailRoleHelper.StaffRole, EmailRoleHelper.AdminRole);
+            if (redirect != null) return (null, redirect);
+            if (user!.Role == EmailRoleHelper.StaffRole && user.ApprovalStatus != ApprovalStatus.Approved)
+            {
+                return (null, RedirectToAction("Dashboard", "Home"));
+            }
+            return (user, null);
+        }
 
         protected (User? User, IActionResult? Redirect) RequireAdmin() =>
             RequireRole(EmailRoleHelper.AdminRole);
@@ -49,7 +59,7 @@ namespace LoginFormASPCore6.Controllers
         protected (User? User, IActionResult? Redirect) RequireStudent() => RequireRole(EmailRoleHelper.StudentRole);
 
         // Any logged-in trainer, approved or not - callers that need to show a
-        // "pending approval" holding page use this and check TrainerApprovalStatus
+        // "pending approval" holding page use this and check ApprovalStatus
         // themselves. Use RequireApprovedTrainer() for actual trainer features.
         protected (User? User, IActionResult? Redirect) RequireTrainer() => RequireRole(EmailRoleHelper.TrainerRole);
 
@@ -57,7 +67,7 @@ namespace LoginFormASPCore6.Controllers
         {
             var (user, redirect) = RequireTrainer();
             if (redirect != null) return (null, redirect);
-            if (user!.TrainerApprovalStatus != TrainerApprovalStatus.Approved)
+            if (user!.ApprovalStatus != ApprovalStatus.Approved)
             {
                 return (null, RedirectToAction("TrainerDashboard", "Home"));
             }

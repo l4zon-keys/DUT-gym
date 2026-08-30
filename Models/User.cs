@@ -52,11 +52,13 @@ namespace LoginFormASPCore6.Models
         [DisplayName("Role")]
         public string Role { get; set; } = "Unknown";
 
-        // Trainer-only fields - null/unused for Student, Staff, Admin.
+        // Trainer-only.
         [StringLength(500)]
         [DisplayName("Bio / Specialties")]
         public string? TrainerBio { get; set; }
 
-        public TrainerApprovalStatus? TrainerApprovalStatus { get; set; }
+        // Set for Trainer and Staff at signup (Pending, until an Admin reviews it) -
+        // null/unused for Student and Admin, who never need approval.
+        public ApprovalStatus? ApprovalStatus { get; set; }
     }
 }

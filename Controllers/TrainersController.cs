@@ -30,7 +30,7 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var trainers = await Db.Users
-                .Where(u => u.Role == EmailRoleHelper.TrainerRole && u.TrainerApprovalStatus == TrainerApprovalStatus.Approved)
+                .Where(u => u.Role == EmailRoleHelper.TrainerRole && u.ApprovalStatus == ApprovalStatus.Approved)
                 .OrderBy(u => u.EmpName)
                 .ToListAsync();
 
@@ -48,7 +48,7 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var trainer = await Db.Users.FirstOrDefaultAsync(u => u.Id == trainerId
-                && u.Role == EmailRoleHelper.TrainerRole && u.TrainerApprovalStatus == TrainerApprovalStatus.Approved);
+                && u.Role == EmailRoleHelper.TrainerRole && u.ApprovalStatus == ApprovalStatus.Approved);
             if (trainer == null) return NotFound();
 
             var hasActive = await Db.TrainerRequests.AnyAsync(r => r.StudentUserId == student!.Id

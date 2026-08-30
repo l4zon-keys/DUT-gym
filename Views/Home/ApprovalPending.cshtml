@@ -1,0 +1,25 @@
+@model LoginFormASPCore6.Models.User
+
+@{
+    ViewData["Title"] = "Application Pending";
+    var roleLabel = Model.Role;
+}
+
+<div class="py-4">
+    <div class="dashboard-card mx-auto" style="max-width: 640px;">
+        <div class="dashboard-banner">
+            <span class="role-badge">@roleLabel</span>
+            <h1>Welcome, @Model.EmpName</h1>
+        </div>
+        <div class="dashboard-body">
+            @if (Model.ApprovalStatus == LoginFormASPCore6.Models.ApprovalStatus.Rejected)
+            {
+                <p>Your @roleLabel.ToLower() application was not approved. Contact the gym admin for details.</p>
+            }
+            else
+            {
+                <p>Your @roleLabel.ToLower() application is awaiting admin approval. You'll get access to the @roleLabel.ToLower() dashboard once approved - check back later.</p>
+            }
+        </div>
+    </div>
+</div>

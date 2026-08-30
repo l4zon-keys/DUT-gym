@@ -93,12 +93,21 @@ namespace LoginFormASPCore6.Controllers
                 ModelState.AddModelError(nameof(u.StudentNumber), "An account with this student/staff number already exists.");
             }
 
+            // Staff self-register via the same form as students (domain-derived), but
+            // need Admin sign-off before they get dashboard access - students don't.
+            if (u.Role == EmailRoleHelper.StaffRole)
+            {
+                u.ApprovalStatus = Models.ApprovalStatus.Pending;
+            }
+
             if (ModelState.IsValid)
             {
                 u.Password = passwordHasher.HashPassword(u, u.Password);
                 await context.Users.AddAsync(u);
                 await context.SaveChangesAsync();
-                TempData["Success"] = "Account created successfully. Please sign in.";
+                TempData["Success"] = u.Role == EmailRoleHelper.StaffRole
+                    ? "Account created. An admin must approve it before you can access the staff dashboard."
+                    : "Account created successfully. Please sign in.";
                 return RedirectToAction("Login");
             }
 
@@ -126,7 +135,7 @@ namespace LoginFormASPCore6.Controllers
             // applying via this form always means "I want to be a Trainer", pending
             // Admin approval.
             u.Role = EmailRoleHelper.TrainerRole;
-            u.TrainerApprovalStatus = Models.TrainerApprovalStatus.Pending;
+            u.ApprovalStatus = Models.ApprovalStatus.Pending;
 
             if (context.Users.Any(x => x.Email == u.Email))
             {
@@ -163,9 +172,9 @@ namespace LoginFormASPCore6.Controllers
                 return RedirectToRoleDashboard(user.Role);
             }
 
-            if (user.TrainerApprovalStatus != Models.TrainerApprovalStatus.Approved)
+            if (user.ApprovalStatus != Models.ApprovalStatus.Approved)
             {
-                return View("TrainerPending", user);
+                return View("ApprovalPending", user);
             }
 
             ViewBag.PendingRequestCount = await context.TrainerRequests
@@ -220,6 +229,12 @@ namespace LoginFormASPCore6.Controllers
             {
                 return RedirectToRoleDashboard(user.Role);
             }
+
+            if (user.ApprovalStatus != Models.ApprovalStatus.Approved)
+            {
+                return View("ApprovalPending", user);
+            }
+
             return View(user);
         }
 
