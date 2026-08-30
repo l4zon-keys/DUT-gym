@@ -1,0 +1,42 @@
+@model List<LoginFormASPCore6.Models.User>
+
+@{
+    ViewData["Title"] = "Pending Trainer Applications";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Pending Trainer Applications</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No trainer applications waiting for review.</p>
+    }
+
+    @foreach (var trainer in Model)
+    {
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@trainer.EmpName <span class="form-text-hint">(@trainer.StudentNumber)</span></h5>
+                    <p class="form-text-hint mb-1">@trainer.Email</p>
+                    <p class="mb-0">@trainer.TrainerBio</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <form asp-action="ReviewTrainer" asp-route-id="@trainer.Id" method="post">
+                        <input type="hidden" name="approve" value="true" />
+                        <button type="submit" class="btn btn-gradient">Approve</button>
+                    </form>
+                    <form asp-action="ReviewTrainer" asp-route-id="@trainer.Id" method="post">
+                        <input type="hidden" name="approve" value="false" />
+                        <button type="submit" class="btn btn-outline-primary">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

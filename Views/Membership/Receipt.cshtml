@@ -31,9 +31,16 @@
             <span class="info-label">Plan</span>
             <span class="info-value">@Model.Plan!.Name</span>
         </div>
+        @if (Model.PersonalTrainerOption != PersonalTrainerOption.None)
+        {
+            <div class="info-row">
+                <span class="info-label">Personal Trainer</span>
+                <span class="info-value">@PersonalTrainerPricing.GetLabel(Model.PersonalTrainerOption)</span>
+            </div>
+        }
         <div class="info-row">
             <span class="info-label">Amount Paid</span>
-            <span class="info-value">R@(Model.Plan.Price.ToString("0.00"))</span>
+            <span class="info-value">R@(Model.AmountPaid.ToString("0.00"))</span>
         </div>
         <div class="info-row">
             <span class="info-label">Start Date</span>

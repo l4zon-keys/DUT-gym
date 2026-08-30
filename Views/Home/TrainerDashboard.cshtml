@@ -1,0 +1,31 @@
+@model LoginFormASPCore6.Models.User
+
+@{
+    ViewData["Title"] = "Trainer Dashboard";
+}
+
+<div class="py-4">
+    <div class="dashboard-card mx-auto" style="max-width: 640px;">
+        <div class="dashboard-banner">
+            <span class="role-badge">Trainer</span>
+            <h1>Welcome, @Model.EmpName</h1>
+            <p>This is your DUT Gym trainer overview.</p>
+        </div>
+        <div class="dashboard-body">
+            <div class="info-row">
+                <span class="info-label">Pending Requests</span>
+                <span class="info-value">@ViewBag.PendingRequestCount</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Assigned Students</span>
+                <span class="info-value">@ViewBag.AssignedStudentCount</span>
+            </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+                <a asp-controller="Trainers" asp-action="IncomingRequests" class="btn btn-gradient">Requests</a>
+                <a asp-controller="Trainers" asp-action="MyStudents" class="btn btn-outline-primary">My Students</a>
+                <a asp-controller="Trainers" asp-action="MySchedule" class="btn btn-outline-primary">My Schedule</a>
+            </div>
+        </div>
+    </div>
+</div>

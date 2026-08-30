@@ -36,6 +36,17 @@
                     <span class="info-label">Plan</span>
                     <span class="info-value">@Model.Plan!.Name</span>
                 </div>
+                @if (Model.PersonalTrainerOption != PersonalTrainerOption.None)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Personal Trainer</span>
+                        <span class="info-value">@PersonalTrainerPricing.GetLabel(Model.PersonalTrainerOption)</span>
+                    </div>
+                }
+                <div class="info-row">
+                    <span class="info-label">@(Model.Status == MembershipStatus.Active ? "Amount Paid" : "Total Cost")</span>
+                    <span class="info-value">R@((Model.Status == MembershipStatus.Active ? Model.AmountPaid : Model.TotalCost).ToString("0.00"))</span>
+                </div>
                 <div class="info-row">
                     <span class="info-label">Status</span>
                     <span class="info-value"><span class="status-badge @statusClass">@Model.Status</span></span>

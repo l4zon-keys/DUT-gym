@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LoginFormASPCore6.Controllers
 {
+    // Desk staff: check-in/check-out and capacity only. Application review, venues,
+    // sessions, and active-member management live in AdminController.
     public class StaffController : AppControllerBase
     {
         private readonly GymCapacityService capacityService;
@@ -12,80 +14,6 @@ namespace LoginFormASPCore6.Controllers
         public StaffController(MyDbContext db, GymCapacityService capacityService) : base(db)
         {
             this.capacityService = capacityService;
-        }
-
-        // --- Verification queue (PB-5, verification side) -----------------
-
-        public async Task<IActionResult> PendingMemberships()
-        {
-            var (_, redirect) = RequireStaff();
-            if (redirect != null) return redirect;
-
-            var pending = await Db.Memberships
-                .Include(m => m.User)
-                .Include(m => m.Plan)
-                .Include(m => m.Payments)
-                .Where(m => m.Status == MembershipStatus.Pending)
-                .OrderBy(m => m.AppliedAt)
-                .ToListAsync();
-
-            return View(pending);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ReviewMembership(int id, bool approve, string? reason)
-        {
-            var (staff, redirect) = RequireStaff();
-            if (redirect != null) return redirect;
-
-            var membership = await Db.Memberships
-                .Include(m => m.Plan)
-                .Include(m => m.Payments)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (membership == null) return NotFound();
-            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(PendingMemberships));
-
-            var latestPayment = membership.Payments.OrderByDescending(p => p.SubmittedAt).FirstOrDefault();
-
-            if (approve && latestPayment == null)
-            {
-                TempData["Error"] = "This application has no payment submitted yet and cannot be approved.";
-                return RedirectToAction(nameof(PendingMemberships));
-            }
-
-            if (approve)
-            {
-                membership.Status = MembershipStatus.Active;
-                membership.StartDate = DateTime.UtcNow.Date;
-                membership.ExpiryDate = membership.StartDate.Value.AddMonths(membership.Plan!.DurationMonths);
-
-                if (latestPayment != null)
-                {
-                    latestPayment.Status = PaymentStatus.Verified;
-                    latestPayment.VerifiedByUserId = staff!.Id;
-                    latestPayment.VerifiedAt = DateTime.UtcNow;
-                }
-            }
-            else
-            {
-                membership.Status = MembershipStatus.Rejected;
-                membership.RejectionReason = string.IsNullOrWhiteSpace(reason) ? "Not specified." : reason;
-
-                if (latestPayment != null)
-                {
-                    latestPayment.Status = PaymentStatus.Rejected;
-                    latestPayment.VerifiedByUserId = staff!.Id;
-                    latestPayment.VerifiedAt = DateTime.UtcNow;
-                }
-            }
-
-            membership.ReviewedByUserId = staff!.Id;
-            membership.ReviewedAt = DateTime.UtcNow;
-
-            await Db.SaveChangesAsync();
-            TempData["Success"] = approve ? "Membership approved." : "Membership rejected.";
-            return RedirectToAction(nameof(PendingMemberships));
         }
 
         // --- Check-in / check-out (PB-5, desk side) ------------------------
@@ -97,18 +25,23 @@ namespace LoginFormASPCore6.Controllers
 
             ViewBag.Query = q;
 
+            IQueryable<User> query = Db.Users.Where(u => u.Role == EmailRoleHelper.StudentRole);
+
             if (string.IsNullOrWhiteSpace(q))
             {
-                return View(new List<User>());
+                // No search yet: show everyone with an active membership so staff isn't
+                // stuck typing a name/number blind.
+                ViewBag.ShowingActiveList = true;
+                query = query.Where(u => Db.Memberships.Any(m => m.UserId == u.Id && m.Status == MembershipStatus.Active));
+            }
+            else
+            {
+                ViewBag.ShowingActiveList = false;
+                var term = q.Trim();
+                query = query.Where(u => u.StudentNumber.Contains(term) || u.Email.Contains(term));
             }
 
-            var term = q.Trim();
-            var results = await Db.Users
-                .Where(u => u.Role == EmailRoleHelper.StudentRole
-                    && (u.StudentNumber.Contains(term) || u.Email.Contains(term)))
-                .Take(20)
-                .ToListAsync();
-
+            var results = await query.OrderBy(u => u.EmpName).Take(50).ToListAsync();
             return View(results);
         }
 
@@ -129,8 +62,16 @@ namespace LoginFormASPCore6.Controllers
                 .Where(c => c.UserId == userId && c.CheckOutTime == null)
                 .FirstOrDefaultAsync();
 
+            var recentCheckIns = await Db.CheckIns
+                .Where(c => c.UserId == userId)
+                .OrderByDescending(c => c.CheckInTime)
+                .Take(10)
+                .ToListAsync();
+
             ViewBag.Membership = membership;
             ViewBag.OpenCheckIn = openCheckIn;
+            ViewBag.RecentCheckIns = recentCheckIns;
+            ViewBag.TotalVisits = await Db.CheckIns.CountAsync(c => c.UserId == userId);
 
             return View(student);
         }

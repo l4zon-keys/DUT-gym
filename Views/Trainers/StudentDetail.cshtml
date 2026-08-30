@@ -1,0 +1,96 @@
+@model LoginFormASPCore6.Models.TrainerRequest
+
+@{
+    ViewData["Title"] = "Manage Student";
+    var sessions = ViewBag.Sessions as List<LoginFormASPCore6.Models.TrainerSession>;
+    var plans = ViewBag.Plans as List<LoginFormASPCore6.Models.WorkoutPlan>;
+}
+
+<div class="py-4">
+    <h1 class="mb-1">@Model.Student!.EmpName</h1>
+    <p class="form-text-hint mb-4">@Model.Student.StudentNumber - @Model.Student.Email</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="section-card">
+                <h5 class="mb-3">Schedule a Session</h5>
+                <form asp-action="ScheduleSession" method="post">
+                    <input type="hidden" name="studentId" value="@Model.Student.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Date &amp; Time</label>
+                        <input type="datetime-local" name="scheduledAt" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Optional" />
+                    </div>
+                    <button type="submit" class="btn btn-gradient w-100">Schedule</button>
+                </form>
+
+                <h6 class="mt-4 mb-2">Sessions</h6>
+                @if (sessions == null || !sessions.Any())
+                {
+                    <p class="text-muted">No sessions yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group">
+                        @foreach (var session in sessions)
+                        {
+                            <li class="list-group-item">@session.ScheduledAt.ToString("f")</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="section-card">
+                <h5 class="mb-3">Upload Workout Plan</h5>
+                <form asp-action="UploadPlan" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="studentId" value="@Model.Student.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Optional" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">File</label>
+                        <input type="file" name="planFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                    </div>
+                    <button type="submit" class="btn btn-gradient w-100">Upload</button>
+                </form>
+
+                <h6 class="mt-4 mb-2">Plans</h6>
+                @if (plans == null || !plans.Any())
+                {
+                    <p class="text-muted">No plans uploaded yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group">
+                        @foreach (var plan in plans)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@plan.Title</span>
+                                <a href="~/@plan.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>

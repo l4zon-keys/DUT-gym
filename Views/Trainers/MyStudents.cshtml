@@ -1,0 +1,36 @@
+@model List<LoginFormASPCore6.Models.TrainerRequest>
+
+@{
+    ViewData["Title"] = "My Students";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">My Students</h1>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No assigned students yet.</p>
+    }
+    else
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Name</th><th>Student Number</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var assignment in Model)
+                    {
+                        <tr>
+                            <td>@assignment.Student!.EmpName</td>
+                            <td>@assignment.Student.StudentNumber</td>
+                            <td class="text-end">
+                                <a asp-action="StudentDetail" asp-route-studentId="@assignment.Student.Id" class="btn btn-sm btn-gradient">Manage</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

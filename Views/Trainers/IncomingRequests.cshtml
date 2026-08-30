@@ -1,0 +1,44 @@
+@model List<LoginFormASPCore6.Models.TrainerRequest>
+
+@{
+    ViewData["Title"] = "Trainer Requests";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Incoming Requests</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No pending requests right now.</p>
+    }
+
+    @foreach (var request in Model)
+    {
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@request.Student!.EmpName <span class="form-text-hint">(@request.Student.StudentNumber)</span></h5>
+                    @if (!string.IsNullOrWhiteSpace(request.Message))
+                    {
+                        <p class="form-text-hint mb-0">"@request.Message"</p>
+                    }
+                </div>
+                <div class="d-flex gap-2">
+                    <form asp-action="RespondToRequest" asp-route-id="@request.Id" method="post">
+                        <input type="hidden" name="accept" value="true" />
+                        <button type="submit" class="btn btn-gradient">Accept</button>
+                    </form>
+                    <form asp-action="RespondToRequest" asp-route-id="@request.Id" method="post">
+                        <input type="hidden" name="accept" value="false" />
+                        <button type="submit" class="btn btn-outline-primary">Decline</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

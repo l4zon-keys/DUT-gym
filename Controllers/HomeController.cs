@@ -113,6 +113,69 @@ namespace LoginFormASPCore6.Controllers
             return View(u);
         }
 
+        public IActionResult BecomeTrainer()
+        {
+            return View(new User());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BecomeTrainer(User u)
+        {
+            // Unlike normal Signup, role is NOT derived from the email domain here -
+            // applying via this form always means "I want to be a Trainer", pending
+            // Admin approval.
+            u.Role = EmailRoleHelper.TrainerRole;
+            u.TrainerApprovalStatus = Models.TrainerApprovalStatus.Pending;
+
+            if (context.Users.Any(x => x.Email == u.Email))
+            {
+                ModelState.AddModelError(nameof(u.Email), "An account with this email already exists.");
+            }
+
+            if (context.Users.Any(x => x.StudentNumber == u.StudentNumber))
+            {
+                ModelState.AddModelError(nameof(u.StudentNumber), "An account with this ID number already exists.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                u.Password = passwordHasher.HashPassword(u, u.Password);
+                await context.Users.AddAsync(u);
+                await context.SaveChangesAsync();
+                TempData["Success"] = "Application submitted. An admin will review it before you get trainer access.";
+                return RedirectToAction("Login");
+            }
+
+            u.Password = string.Empty;
+            return View(u);
+        }
+
+        public async Task<IActionResult> TrainerDashboard()
+        {
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+            if (user.Role != EmailRoleHelper.TrainerRole)
+            {
+                return RedirectToRoleDashboard(user.Role);
+            }
+
+            if (user.TrainerApprovalStatus != Models.TrainerApprovalStatus.Approved)
+            {
+                return View("TrainerPending", user);
+            }
+
+            ViewBag.PendingRequestCount = await context.TrainerRequests
+                .CountAsync(r => r.TrainerUserId == user.Id && r.Status == TrainerRequestStatus.Pending);
+            ViewBag.AssignedStudentCount = await context.TrainerRequests
+                .CountAsync(r => r.TrainerUserId == user.Id && r.Status == TrainerRequestStatus.Accepted);
+
+            return View(user);
+        }
+
         // Legacy / generic entry point: sends an already-logged-in user
         // to the dashboard that matches their role.
         public IActionResult Dashboard()
@@ -160,6 +223,20 @@ namespace LoginFormASPCore6.Controllers
             return View(user);
         }
 
+        public IActionResult AdminDashboard()
+        {
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+            if (user.Role != EmailRoleHelper.AdminRole)
+            {
+                return RedirectToRoleDashboard(user.Role);
+            }
+            return View(user);
+        }
+
         public IActionResult Privacy()
         {
             return View();
@@ -197,9 +274,10 @@ namespace LoginFormASPCore6.Controllers
         private IActionResult RedirectToRoleDashboard(string? role = null)
         {
             role ??= HttpContext.Session.GetString("UserRole");
-            return role == EmailRoleHelper.StaffRole
-                ? RedirectToAction("StaffDashboard")
-                : RedirectToAction("StudentDashboard");
+            if (role == EmailRoleHelper.AdminRole) return RedirectToAction("AdminDashboard");
+            if (role == EmailRoleHelper.StaffRole) return RedirectToAction("StaffDashboard");
+            if (role == EmailRoleHelper.TrainerRole) return RedirectToAction("TrainerDashboard");
+            return RedirectToAction("StudentDashboard");
         }
     }
 }

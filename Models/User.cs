@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LoginFormASPCore6.Models
 {
@@ -12,6 +13,7 @@ namespace LoginFormASPCore6.Models
         [Required(ErrorMessage = "Please enter your full name.")]
         [DisplayName("Full Name")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 50 characters.")]
+        [RegularExpression(@"^[A-Za-z\s'-]+$", ErrorMessage = "Name must contain letters only (no numbers or symbols).")]
         public string EmpName { get; set; } = null!;
 
         [Required(ErrorMessage = "Please select a gender.")]
@@ -38,9 +40,23 @@ namespace LoginFormASPCore6.Models
         [DisplayName("Password")]
         public string Password { get; set; } = null!;
 
+        [NotMapped]
+        [Required(ErrorMessage = "Please confirm your password.")]
+        [DataType(DataType.Password)]
+        [DisplayName("Confirm Password")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string? ConfirmPassword { get; set; }
+
         // Automatically determined server-side from the email domain at signup.
         // Not bound from the form and not user-editable.
         [DisplayName("Role")]
         public string Role { get; set; } = "Unknown";
+
+        // Trainer-only fields - null/unused for Student, Staff, Admin.
+        [StringLength(500)]
+        [DisplayName("Bio / Specialties")]
+        public string? TrainerBio { get; set; }
+
+        public TrainerApprovalStatus? TrainerApprovalStatus { get; set; }
     }
 }

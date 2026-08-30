@@ -14,7 +14,7 @@ namespace LoginFormASPCore6.Controllers
 
         public async Task<IActionResult> Manage()
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
 
             var venues = await Db.Venues.OrderBy(v => v.Name).ToListAsync();
@@ -23,7 +23,7 @@ namespace LoginFormASPCore6.Controllers
 
         public IActionResult Create()
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
             return View(new Venue());
         }
@@ -32,7 +32,7 @@ namespace LoginFormASPCore6.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Venue venue)
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
 
             if (!ModelState.IsValid) return View(venue);
@@ -45,7 +45,7 @@ namespace LoginFormASPCore6.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
 
             var venue = await Db.Venues.FindAsync(id);
@@ -57,7 +57,7 @@ namespace LoginFormASPCore6.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Venue venue)
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
             if (id != venue.Id) return NotFound();
 
@@ -73,7 +73,7 @@ namespace LoginFormASPCore6.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleActive(int id)
         {
-            var (_, redirect) = RequireStaff();
+            var (_, redirect) = RequireAdmin();
             if (redirect != null) return redirect;
 
             var venue = await Db.Venues.FindAsync(id);

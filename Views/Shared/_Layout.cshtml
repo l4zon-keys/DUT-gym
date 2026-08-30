@@ -41,8 +41,43 @@
                                 <li class="nav-item">
                                     <a class="nav-link" asp-area="" asp-controller="Staff" asp-action="CheckIn">Check-In</a>
                                 </li>
+                            }
+                            @if (currentRole == "Admin")
+                            {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Staff" asp-action="PendingMemberships">Approvals</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="PendingMemberships">Approvals</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ActiveMembers">Active Members</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="PendingTrainers">Trainer Applications</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reports">Reports</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><a class="dropdown-item" asp-controller="Venues" asp-action="Manage">Manage Venues</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Manage">Manage Sessions</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (currentRole == "Student")
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Trainers" asp-action="Browse">Trainers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="MyGoal">My Goals</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="Leaderboard">Leaderboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Browse">Book a Session</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (currentRole == "Trainer")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Trainers" asp-action="IncomingRequests">Requests</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Trainers" asp-action="MyStudents">My Students</a>
                                 </li>
                             }
                         }

@@ -1,0 +1,69 @@
+@model Membership
+
+@{
+    ViewData["Title"] = "Edit Membership";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto" style="max-width: 560px;">
+        <h1 class="mb-1">Edit Membership</h1>
+        <p class="form-text-hint mb-4">@Model.User!.EmpName (@Model.User.StudentNumber) - @Model.Plan!.Name</p>
+
+        <form asp-action="EditMembership" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Campus" class="form-label"></label>
+                <input asp-for="Campus" class="form-control" />
+                <span asp-validation-for="Campus" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EmergencyContactName" class="form-label"></label>
+                <input asp-for="EmergencyContactName" class="form-control" />
+                <span asp-validation-for="EmergencyContactName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EmergencyContactPhone" class="form-label"></label>
+                <input asp-for="EmergencyContactPhone" class="form-control" />
+                <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MedicalConditions" class="form-label"></label>
+                <textarea asp-for="MedicalConditions" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PersonalTrainerOption" class="form-label"></label>
+                <select asp-for="PersonalTrainerOption" class="form-control">
+                    @foreach (var option in Enum.GetValues<PersonalTrainerOption>())
+                    {
+                        <option value="@option">@PersonalTrainerPricing.GetLabel(option)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StartDate" class="form-label"></label>
+                <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ExpiryDate" class="form-label"></label>
+                <input asp-for="ExpiryDate" type="date" class="form-control" value="@Model.ExpiryDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <button type="submit" class="btn btn-gradient">Save Changes</button>
+            <a asp-action="ActiveMembers" class="btn btn-outline-primary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

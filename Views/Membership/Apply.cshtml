@@ -9,8 +9,8 @@
         <h1 class="mb-1">Apply for Gym Membership</h1>
         <p class="form-text-hint mb-4">Fill in your details below to submit your membership application.</p>
 
-        <form asp-action="Apply" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Apply" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger"></div>
 
             <div class="mb-3">
                 <label asp-for="PlanId" class="form-label"></label>
@@ -18,6 +18,12 @@
                     <option value="">Select a plan</option>
                 </select>
                 <span asp-validation-for="PlanId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PersonalTrainerOption" class="form-label"></label>
+                <select asp-for="PersonalTrainerOption" asp-items="@((IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.TrainerOptions)" class="form-control"></select>
+                <span asp-validation-for="PersonalTrainerOption" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
@@ -48,6 +54,12 @@
                 <input asp-for="MedicalConsentAccepted" class="form-check-input" />
                 <label asp-for="MedicalConsentAccepted" class="form-check-label"></label>
                 <span asp-validation-for="MedicalConsentAccepted" class="text-danger d-block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Proof of Registration</label>
+                <input type="file" name="registrationProofFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required />
+                <div class="form-text-hint mt-1">Your DUT registration letter or student card (PDF, JPG, or PNG, max 5MB) - used to confirm you're a currently registered student.</div>
             </div>
 
             <button type="submit" class="btn btn-gradient w-100">Submit Application</button>

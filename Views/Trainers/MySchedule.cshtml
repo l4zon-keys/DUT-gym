@@ -1,0 +1,34 @@
+@model List<LoginFormASPCore6.Models.TrainerSession>
+
+@{
+    ViewData["Title"] = "My Schedule";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">My Schedule</h1>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No sessions scheduled yet.</p>
+    }
+    else
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Date &amp; Time</th><th>Student</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model)
+                    {
+                        <tr>
+                            <td>@session.ScheduledAt.ToString("f")</td>
+                            <td>@session.Student!.EmpName</td>
+                            <td>@session.Notes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -3,6 +3,8 @@
     ViewData["Title"] = "Check-In Detail";
     var membership = ViewBag.Membership as Membership;
     var openCheckIn = ViewBag.OpenCheckIn as CheckIn;
+    var recentCheckIns = ViewBag.RecentCheckIns as List<CheckIn>;
+    var totalVisits = (int)ViewBag.TotalVisits;
 }
 
 <div class="py-4">
@@ -49,6 +51,11 @@
                 <span class="info-value">@(openCheckIn != null ? "Yes, since " + openCheckIn.CheckInTime.ToString("t") : "No")</span>
             </div>
 
+            <div class="info-row">
+                <span class="info-label">Total Visits</span>
+                <span class="info-value">@totalVisits</span>
+            </div>
+
             <div class="mt-4 d-flex gap-2">
                 @if (openCheckIn == null)
                 {
@@ -65,6 +72,25 @@
                     </form>
                 }
             </div>
+
+            @if (recentCheckIns != null && recentCheckIns.Any())
+            {
+                <h6 class="mt-4 mb-2">Recent Visits</h6>
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr><th>Checked In</th><th>Checked Out</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var visit in recentCheckIns)
+                        {
+                            <tr>
+                                <td>@visit.CheckInTime.ToString("g")</td>
+                                <td>@(visit.CheckOutTime?.ToString("g") ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
     </div>
 </div>

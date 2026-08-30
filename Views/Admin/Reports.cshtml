@@ -1,0 +1,59 @@
+@model LoginFormASPCore6.Services.AttendanceReport
+
+@{
+    ViewData["Title"] = "Attendance Reports";
+    var maxHourCount = Model.PeakHours.Any() ? Model.PeakHours.Values.Max() : 0;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Attendance &amp; Usage Reports</h1>
+
+    <div class="section-card mb-4">
+        <span class="info-label">Total Check-Ins</span>
+        <div class="plan-price">@Model.TotalCheckIns</div>
+    </div>
+
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Peak Hours</h5>
+        @if (Model.TotalCheckIns == 0)
+        {
+            <p class="text-muted">No check-in data yet.</p>
+        }
+        else
+        {
+            <div class="report-bars">
+                @foreach (var hour in Model.PeakHours.OrderBy(h => h.Key))
+                {
+                    var heightPct = maxHourCount == 0 ? 0 : Math.Max(4, (int)(100.0 * hour.Value / maxHourCount));
+                    <div class="report-bar-col" title="@hour.Key:00 - @hour.Value check-in(s)">
+                        <div class="report-bar-track">
+                            <div class="report-bar" style="height: @(heightPct)%;"></div>
+                        </div>
+                        <small>@hour.Key</small>
+                    </div>
+                }
+            </div>
+            <p class="form-text-hint mt-2 mb-0">Hour of day (24h), bar height = number of check-ins.</p>
+        }
+    </div>
+
+    <div class="section-card">
+        <h5 class="mb-3">Monthly Attendance</h5>
+        @if (!Model.MonthlyTotals.Any())
+        {
+            <p class="text-muted">No check-in data yet.</p>
+        }
+        else
+        {
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Month</th><th>Check-Ins</th></tr></thead>
+                <tbody>
+                    @foreach (var month in Model.MonthlyTotals)
+                    {
+                        <tr><td>@month.Key</td><td>@month.Value</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

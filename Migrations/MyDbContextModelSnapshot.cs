@@ -17,10 +17,10 @@ namespace LoginFormASPCore6.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.26")
+                .HasAnnotation("ProductVersion", "8.0.30")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("LoginFormASPCore6.Models.CheckIn", b =>
                 {
@@ -28,7 +28,7 @@ namespace LoginFormASPCore6.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CheckInTime")
                         .HasColumnType("datetime2");
@@ -56,13 +56,49 @@ namespace LoginFormASPCore6.Migrations
                     b.ToTable("CheckIns");
                 });
 
+            modelBuilder.Entity("LoginFormASPCore6.Models.FitnessGoal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GoalType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("StartingWeightKg")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal?>("TargetWeightKg")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FitnessGoals");
+                });
+
             modelBuilder.Entity("LoginFormASPCore6.Models.Membership", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AppliedAt")
                         .HasColumnType("datetime2");
@@ -92,8 +128,17 @@ namespace LoginFormASPCore6.Migrations
                     b.Property<bool>("MedicalConsentAccepted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PersonalTrainerOption")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("PlanId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ProofOfRegistrationFilePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
 
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(300)
@@ -133,7 +178,7 @@ namespace LoginFormASPCore6.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasMaxLength(300)
@@ -164,7 +209,7 @@ namespace LoginFormASPCore6.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(10,2)");
@@ -212,13 +257,41 @@ namespace LoginFormASPCore6.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("LoginFormASPCore6.Models.ProgressLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FitnessGoalId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LoggedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FitnessGoalId");
+
+                    b.ToTable("ProgressLogs");
+                });
+
             modelBuilder.Entity("LoginFormASPCore6.Models.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
@@ -248,13 +321,116 @@ namespace LoginFormASPCore6.Migrations
                     b.ToTable("Sessions");
                 });
 
+            modelBuilder.Entity("LoginFormASPCore6.Models.SessionBooking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BookedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Cancelled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SessionBookings");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.TrainerRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("StudentUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrainerUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("TrainerUserId");
+
+                    b.ToTable("TrainerRequests");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.TrainerSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("ReminderSent")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StudentUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrainerUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("TrainerUserId");
+
+                    b.ToTable("TrainerSessions");
+                });
+
             modelBuilder.Entity("LoginFormASPCore6.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -294,6 +470,14 @@ namespace LoginFormASPCore6.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<string>("TrainerApprovalStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TrainerBio")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -311,7 +495,7 @@ namespace LoginFormASPCore6.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
@@ -331,6 +515,46 @@ namespace LoginFormASPCore6.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Venues");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.WorkoutPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("StudentUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TrainerUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("TrainerUserId");
+
+                    b.ToTable("WorkoutPlans");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.CheckIn", b =>
@@ -355,6 +579,17 @@ namespace LoginFormASPCore6.Migrations
                     b.Navigation("CheckedInByUser");
 
                     b.Navigation("CheckedOutByUser");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.FitnessGoal", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -403,6 +638,17 @@ namespace LoginFormASPCore6.Migrations
                     b.Navigation("VerifiedByUser");
                 });
 
+            modelBuilder.Entity("LoginFormASPCore6.Models.ProgressLog", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.FitnessGoal", "FitnessGoal")
+                        .WithMany("ProgressLogs")
+                        .HasForeignKey("FitnessGoalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FitnessGoal");
+                });
+
             modelBuilder.Entity("LoginFormASPCore6.Models.Session", b =>
                 {
                     b.HasOne("LoginFormASPCore6.Models.Venue", "Venue")
@@ -412,6 +658,87 @@ namespace LoginFormASPCore6.Migrations
                         .IsRequired();
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.SessionBooking", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.Session", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LoginFormASPCore6.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.TrainerRequest", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LoginFormASPCore6.Models.User", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.TrainerSession", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LoginFormASPCore6.Models.User", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.WorkoutPlan", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LoginFormASPCore6.Models.User", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.FitnessGoal", b =>
+                {
+                    b.Navigation("ProgressLogs");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Membership", b =>

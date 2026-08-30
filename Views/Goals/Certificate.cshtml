@@ -1,0 +1,22 @@
+@model LoginFormASPCore6.Models.User
+
+@{
+    ViewData["Title"] = "Certificate";
+    Layout = "_Layout";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto text-center" style="max-width: 640px;">
+        <h1 class="mb-1">Certificate of Consistency</h1>
+        <p class="form-text-hint mb-4">Dut Gym e-Application</p>
+
+        <p class="mb-1">This certifies that</p>
+        <h2 class="mb-3">@Model.EmpName</h2>
+        <p class="mb-1">completed <strong>@ViewBag.Visits</strong> gym visits in</p>
+        <h4 class="mb-4">@ViewBag.Month</h4>
+
+        <div class="mt-4 no-print">
+            <button onclick="window.print()" class="btn btn-gradient">Print / Save as PDF</button>
+        </div>
+    </div>
+</div>

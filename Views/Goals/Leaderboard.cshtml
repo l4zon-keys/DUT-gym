@@ -1,0 +1,33 @@
+@model List<LoginFormASPCore6.Services.LeaderboardEntry>
+
+@{
+    ViewData["Title"] = "Leaderboard";
+}
+
+<div class="py-4">
+    <h1 class="mb-1">Member of the Month</h1>
+    <p class="form-text-hint mb-4">@DateTime.UtcNow.ToString("MMMM yyyy")</p>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No check-ins recorded this month yet.</p>
+    }
+    else
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>#</th><th>Name</th><th>Visits</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Count; i++)
+                    {
+                        <tr class="@(i == 0 ? "leaderboard-first" : "")">
+                            <td>@(i + 1)</td>
+                            <td>@Model[i].EmpName</td>
+                            <td>@Model[i].VisitCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

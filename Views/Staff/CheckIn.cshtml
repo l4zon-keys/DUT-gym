@@ -16,9 +16,14 @@
     {
         <p class="text-muted">No students matched that search.</p>
     }
+    else if ((bool)ViewBag.ShowingActiveList && !Model.Any())
+    {
+        <p class="text-muted">No active members yet.</p>
+    }
 
     @if (Model.Any())
     {
+        <h5 class="mb-3">@((bool)ViewBag.ShowingActiveList ? "Active Members" : "Search Results")</h5>
         <div class="section-card">
             <table class="table align-middle mb-0">
                 <thead>

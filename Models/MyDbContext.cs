@@ -23,6 +23,12 @@ namespace LoginFormASPCore6.Models
         public virtual DbSet<Membership> Memberships { get; set; } = null!;
         public virtual DbSet<Payment> Payments { get; set; } = null!;
         public virtual DbSet<CheckIn> CheckIns { get; set; } = null!;
+        public virtual DbSet<TrainerRequest> TrainerRequests { get; set; } = null!;
+        public virtual DbSet<TrainerSession> TrainerSessions { get; set; } = null!;
+        public virtual DbSet<WorkoutPlan> WorkoutPlans { get; set; } = null!;
+        public virtual DbSet<FitnessGoal> FitnessGoals { get; set; } = null!;
+        public virtual DbSet<ProgressLog> ProgressLogs { get; set; } = null!;
+        public virtual DbSet<SessionBooking> SessionBookings { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -72,6 +78,8 @@ namespace LoginFormASPCore6.Models
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasDefaultValue(EmailRoleHelper.UnknownRole);
+
+                entity.Property(e => e.TrainerApprovalStatus).HasConversion<string>().HasMaxLength(20);
             });
 
             modelBuilder.Entity<MembershipPlan>(entity =>
@@ -90,6 +98,7 @@ namespace LoginFormASPCore6.Models
             modelBuilder.Entity<Membership>(entity =>
             {
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.PersonalTrainerOption).HasConversion<string>().HasMaxLength(20);
 
                 entity.HasOne(e => e.User)
                     .WithMany()
@@ -139,6 +148,82 @@ namespace LoginFormASPCore6.Models
                 entity.HasOne(e => e.CheckedOutByUser)
                     .WithMany()
                     .HasForeignKey(e => e.CheckedOutByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<TrainerRequest>(entity =>
+            {
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Trainer)
+                    .WithMany()
+                    .HasForeignKey(e => e.TrainerUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<TrainerSession>(entity =>
+            {
+                entity.HasOne(e => e.Trainer)
+                    .WithMany()
+                    .HasForeignKey(e => e.TrainerUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<WorkoutPlan>(entity =>
+            {
+                entity.HasOne(e => e.Trainer)
+                    .WithMany()
+                    .HasForeignKey(e => e.TrainerUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<FitnessGoal>(entity =>
+            {
+                entity.Property(e => e.GoalType).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.StartingWeightKg).HasColumnType("decimal(5,2)");
+                entity.Property(e => e.TargetWeightKg).HasColumnType("decimal(5,2)");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ProgressLog>(entity =>
+            {
+                entity.Property(e => e.WeightKg).HasColumnType("decimal(5,2)");
+
+                entity.HasOne(e => e.FitnessGoal)
+                    .WithMany(g => g.ProgressLogs)
+                    .HasForeignKey(e => e.FitnessGoalId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SessionBooking>(entity =>
+            {
+                entity.HasOne(e => e.Session)
+                    .WithMany()
+                    .HasForeignKey(e => e.SessionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

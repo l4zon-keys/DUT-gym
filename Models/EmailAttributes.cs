@@ -41,6 +41,12 @@ namespace LoginFormASPCore6.Models
 
         public const string StudentRole = "Student";
         public const string StaffRole = "Staff";
+        // Not assignable via signup/domain - promoted manually (directly in the database).
+        // Admin has every Staff permission plus admin-only ones (see AppControllerBase).
+        public const string AdminRole = "Admin";
+        // Self-applied via the "Become a Trainer" form, not domain-derived - starts
+        // TrainerApprovalStatus.Pending until an Admin approves them.
+        public const string TrainerRole = "Trainer";
         public const string UnknownRole = "Unknown";
 
         public static string GetRole(string? email)

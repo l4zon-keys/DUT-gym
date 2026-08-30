@@ -24,23 +24,45 @@ namespace LoginFormASPCore6.Controllers
             return Db.Users.FirstOrDefault(x => x.Email == email);
         }
 
-        protected (User? User, IActionResult? Redirect) RequireRole(string role)
+        protected (User? User, IActionResult? Redirect) RequireRole(params string[] roles)
         {
             var user = GetCurrentUser();
             if (user == null)
             {
                 return (null, RedirectToAction("Login", "Home"));
             }
-            if (user.Role != role)
+            if (!roles.Contains(user.Role))
             {
                 return (null, RedirectToAction("Dashboard", "Home"));
             }
             return (user, null);
         }
 
-        protected (User? User, IActionResult? Redirect) RequireStaff() => RequireRole(EmailRoleHelper.StaffRole);
+        // Admin has every Staff permission plus admin-only ones, so anything gated to
+        // "staff" also lets an Admin through.
+        protected (User? User, IActionResult? Redirect) RequireStaff() =>
+            RequireRole(EmailRoleHelper.StaffRole, EmailRoleHelper.AdminRole);
+
+        protected (User? User, IActionResult? Redirect) RequireAdmin() =>
+            RequireRole(EmailRoleHelper.AdminRole);
 
         protected (User? User, IActionResult? Redirect) RequireStudent() => RequireRole(EmailRoleHelper.StudentRole);
+
+        // Any logged-in trainer, approved or not - callers that need to show a
+        // "pending approval" holding page use this and check TrainerApprovalStatus
+        // themselves. Use RequireApprovedTrainer() for actual trainer features.
+        protected (User? User, IActionResult? Redirect) RequireTrainer() => RequireRole(EmailRoleHelper.TrainerRole);
+
+        protected (User? User, IActionResult? Redirect) RequireApprovedTrainer()
+        {
+            var (user, redirect) = RequireTrainer();
+            if (redirect != null) return (null, redirect);
+            if (user!.TrainerApprovalStatus != TrainerApprovalStatus.Approved)
+            {
+                return (null, RedirectToAction("TrainerDashboard", "Home"));
+            }
+            return (user, null);
+        }
 
         protected (User? User, IActionResult? Redirect) RequireAnyUser()
         {

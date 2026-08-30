@@ -48,6 +48,27 @@ namespace LoginFormASPCore6.Models
         [DisplayName("I consent to the medical indemnity waiver")]
         public bool MedicalConsentAccepted { get; set; }
 
+        [DisplayName("Personal Trainer")]
+        public PersonalTrainerOption PersonalTrainerOption { get; set; } = PersonalTrainerOption.None;
+
+        // Relative path under wwwroot/uploads/registration/ - never a client-supplied filename.
+        [StringLength(260)]
+        public string? ProofOfRegistrationFilePath { get; set; }
+
+        // Quoted price before payment - plan price + trainer fee at CURRENT rates. Use this
+        // while a membership is still Pending (nothing charged yet).
+        [NotMapped]
+        public decimal TotalCost => (Plan?.Price ?? 0) + PersonalTrainerPricing.Fees.GetValueOrDefault(PersonalTrainerOption);
+
+        // The amount actually charged, from the verified payment record - immutable even if
+        // plan prices change later. Falls back to the live quote only if nothing's been paid yet.
+        [NotMapped]
+        public decimal AmountPaid => Payments
+            .Where(p => p.Status == PaymentStatus.Verified)
+            .OrderByDescending(p => p.VerifiedAt)
+            .Select(p => (decimal?)p.Amount)
+            .FirstOrDefault() ?? TotalCost;
+
         public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? StartDate { get; set; }

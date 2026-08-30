@@ -1,0 +1,85 @@
+@model LoginFormASPCore6.Models.User
+
+@{
+    ViewData["Title"] = "Become a Trainer";
+}
+
+<section class="auth-section">
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1>Apply as a Personal Trainer</h1>
+                        <p>Your application will be reviewed by an admin before you get trainer access.</p>
+                    </div>
+                    <div class="auth-body">
+                        <form asp-action="BecomeTrainer" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="EmpName" class="form-label"></label>
+                                <input asp-for="EmpName" class="form-control" placeholder="Full name" />
+                                <span asp-validation-for="EmpName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Gender" class="form-label"></label>
+                                <select asp-for="Gender" class="form-control">
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="StudentNumber" class="form-label">ID / Staff Number</label>
+                                <input asp-for="StudentNumber" class="form-control" placeholder="Staff or ID number" />
+                                <span asp-validation-for="StudentNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="name@dut4life.ac.za or name@dut.ac.za" autocomplete="username" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="TrainerBio" class="form-label"></label>
+                                <textarea asp-for="TrainerBio" class="form-control" rows="3" placeholder="Your experience, qualifications, and training specialties"></textarea>
+                                <span asp-validation-for="TrainerBio" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="Create a password" autocomplete="new-password" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter your password" autocomplete="new-password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+
+                            <button type="submit" class="btn btn-gradient btn-lg w-100 mt-2">Submit Application</button>
+
+                            <div class="mt-4 text-center">
+                                <p class="mb-0 form-text-hint">
+                                    Already have an account? <a asp-action="Login" class="fw-bold">Sign in</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

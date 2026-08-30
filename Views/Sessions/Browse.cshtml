@@ -1,0 +1,46 @@
+@model List<LoginFormASPCore6.Models.Session>
+
+@{
+    ViewData["Title"] = "Book a Session";
+    var bookingCounts = ViewBag.BookingCounts as Dictionary<int, int>;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Upcoming Sessions</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <p class="mb-4"><a asp-action="MyBookings">View My Bookings</a></p>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No upcoming sessions scheduled.</p>
+    }
+
+    @foreach (var session in Model)
+    {
+        var booked = bookingCounts != null && bookingCounts.TryGetValue(session.Id, out var count) ? count : 0;
+        var full = booked >= session.Capacity;
+
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@session.Title</h5>
+                    <p class="form-text-hint mb-1">@session.Venue!.Name - @session.StartTime.ToString("f")</p>
+                    <p class="mb-0">@booked / @session.Capacity booked</p>
+                </div>
+                <form asp-action="Book" method="post">
+                    <input type="hidden" name="sessionId" value="@session.Id" />
+                    <button type="submit" class="btn btn-gradient" @(full ? "disabled" : "")>@(full ? "Full" : "Book")</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

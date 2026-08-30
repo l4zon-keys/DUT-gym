@@ -1,0 +1,56 @@
+@model List<Membership>
+
+@{
+    ViewData["Title"] = "Active Members";
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Active Members</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form method="get" class="d-flex gap-2 mb-4" style="max-width: 480px;">
+        <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Search by name, student number, or email" />
+        <button type="submit" class="btn btn-gradient">Search</button>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No active members @(ViewBag.Query != null ? "matched that search" : "yet").</p>
+    }
+    else
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student Number</th>
+                        <th>Plan</th>
+                        <th>Trainer</th>
+                        <th>Expires</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var membership in Model)
+                    {
+                        <tr>
+                            <td>@membership.User!.EmpName</td>
+                            <td>@membership.User.StudentNumber</td>
+                            <td>@membership.Plan!.Name</td>
+                            <td>@(membership.PersonalTrainerOption == PersonalTrainerOption.None ? "-" : PersonalTrainerPricing.GetLabel(membership.PersonalTrainerOption))</td>
+                            <td>@membership.ExpiryDate?.ToString("d")</td>
+                            <td class="text-end">
+                                <a asp-action="EditMembership" asp-route-id="@membership.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

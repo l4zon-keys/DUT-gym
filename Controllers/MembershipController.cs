@@ -14,11 +14,13 @@ namespace LoginFormASPCore6.Controllers
 
         private readonly IPaymentGateway gateway;
         private readonly IWebHostEnvironment environment;
+        private readonly IConfiguration configuration;
 
-        public MembershipController(MyDbContext db, IPaymentGateway gateway, IWebHostEnvironment environment) : base(db)
+        public MembershipController(MyDbContext db, IPaymentGateway gateway, IWebHostEnvironment environment, IConfiguration configuration) : base(db)
         {
             this.gateway = gateway;
             this.environment = environment;
+            this.configuration = configuration;
         }
 
         // --- Apply (PB-3) -----------------------------------------------
@@ -37,12 +39,13 @@ namespace LoginFormASPCore6.Controllers
             }
 
             await PopulatePlans();
+            PopulateTrainerOptions();
             return View(new Membership());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(Membership model)
+        public async Task<IActionResult> Apply(Membership model, IFormFile registrationProofFile)
         {
             var (user, redirect) = RequireStudent();
             if (redirect != null) return redirect;
@@ -62,9 +65,28 @@ namespace LoginFormASPCore6.Controllers
                 ModelState.AddModelError(nameof(model.MedicalConsentAccepted), "You must accept the medical indemnity consent to apply.");
             }
 
+            string? extension = null;
+            if (registrationProofFile == null || registrationProofFile.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Please upload proof of registration (e.g. your DUT registration letter or student card).");
+            }
+            else
+            {
+                extension = Path.GetExtension(registrationProofFile.FileName).ToLowerInvariant();
+                if (!AllowedProofExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError(string.Empty, "Proof of registration must be a PDF, JPG, or PNG file.");
+                }
+                else if (registrationProofFile.Length > MaxProofFileBytes)
+                {
+                    ModelState.AddModelError(string.Empty, "Proof of registration file is too large (5MB max).");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulatePlans();
+                PopulateTrainerOptions();
                 return View(model);
             }
 
@@ -73,6 +95,20 @@ namespace LoginFormASPCore6.Controllers
             model.AppliedAt = DateTime.UtcNow;
 
             Db.Memberships.Add(model);
+            await Db.SaveChangesAsync();
+
+            var relativeDir = Path.Combine("uploads", "registration", model.Id.ToString());
+            var absoluteDir = Path.Combine(environment.WebRootPath, relativeDir);
+            Directory.CreateDirectory(absoluteDir);
+
+            var generatedFileName = $"{Guid.NewGuid():N}{extension}";
+            var absolutePath = Path.Combine(absoluteDir, generatedFileName);
+            using (var stream = new FileStream(absolutePath, FileMode.Create))
+            {
+                await registrationProofFile!.CopyToAsync(stream);
+            }
+
+            model.ProofOfRegistrationFilePath = Path.Combine(relativeDir, generatedFileName).Replace('\\', '/');
             await Db.SaveChangesAsync();
 
             return RedirectToAction(nameof(Pay), new { id = model.Id });
@@ -85,6 +121,15 @@ namespace LoginFormASPCore6.Controllers
             {
                 Value = p.Id.ToString(),
                 Text = $"{p.Name} - R{p.Price:0.00} ({p.DurationMonths} month(s))"
+            });
+        }
+
+        private void PopulateTrainerOptions()
+        {
+            ViewBag.TrainerOptions = Enum.GetValues<PersonalTrainerOption>().Select(o => new SelectListItem
+            {
+                Value = o.ToString(),
+                Text = PersonalTrainerPricing.GetLabel(o)
             });
         }
 
@@ -117,7 +162,7 @@ namespace LoginFormASPCore6.Controllers
             {
                 MembershipId = membership.Id,
                 Method = PaymentMethod.Gateway,
-                Amount = membership.Plan!.Price,
+                Amount = membership.TotalCost,
                 Status = PaymentStatus.Pending,
                 GatewayProvider = gateway.ProviderName
             };
@@ -193,6 +238,7 @@ namespace LoginFormASPCore6.Controllers
             if (membership == null || membership.UserId != user!.Id) return NotFound();
             if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
 
+            ViewBag.GymBanking = configuration.GetSection("GymBanking");
             return View(membership);
         }
 
@@ -242,7 +288,7 @@ namespace LoginFormASPCore6.Controllers
             {
                 MembershipId = membership.Id,
                 Method = PaymentMethod.ManualProof,
-                Amount = membership.Plan!.Price,
+                Amount = membership.TotalCost,
                 Status = PaymentStatus.Pending,
                 ProofFilePath = Path.Combine(relativeDir, generatedFileName).Replace('\\', '/')
             };

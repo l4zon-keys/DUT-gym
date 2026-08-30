@@ -1,0 +1,47 @@
+@model List<LoginFormASPCore6.Models.User>
+
+@{
+    ViewData["Title"] = "Browse Trainers";
+    bool hasActiveRequest = ViewBag.HasActiveRequest;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Personal Trainers</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (hasActiveRequest)
+    {
+        <div class="alert alert-info">
+            You already have an active trainer request. <a asp-action="MyTrainer">View it</a> or cancel it there before requesting someone else.
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No trainers available yet.</p>
+    }
+
+    @foreach (var trainer in Model)
+    {
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@trainer.EmpName</h5>
+                    <p class="form-text-hint mb-0">@(string.IsNullOrWhiteSpace(trainer.TrainerBio) ? "No bio provided." : trainer.TrainerBio)</p>
+                </div>
+                <form asp-action="RequestTrainer" method="post">
+                    <input type="hidden" name="trainerId" value="@trainer.Id" />
+                    <button type="submit" class="btn btn-gradient" @(hasActiveRequest ? "disabled" : "")>Request</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
