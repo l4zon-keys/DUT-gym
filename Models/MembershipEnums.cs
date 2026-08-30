@@ -8,17 +8,28 @@ namespace LoginFormASPCore6.Models
         Expired
     }
 
+    // No real payment processor is ever integrated (no gateway API, no card
+    // processing, no webhook). "Paying" is a state machine the app decides itself
+    // based on the chosen method - see the settlement rule on PaymentStatus below.
     public enum PaymentMethod
     {
-        Gateway,
-        ManualProof
+        Cash,
+        Card,
+        Eft,
+        MobileMoney
     }
 
     public enum PaymentStatus
     {
+        // Cash starts here and stays here until an admin confirms the money was
+        // physically received.
         Pending,
-        Verified,
-        Rejected
+        // Card/Eft/MobileMoney go straight here - there's no real processor to wait
+        // on, so they settle immediately.
+        Paid,
+        Failed,
+        Refunded,
+        PartiallyRefunded
     }
 
     public enum PersonalTrainerOption

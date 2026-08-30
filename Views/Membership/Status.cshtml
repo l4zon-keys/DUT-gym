@@ -74,9 +74,9 @@
                         <p class="mt-3">Your application has been submitted. Please complete payment to finish your application.</p>
                         <a asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-gradient">Pay Now</a>
                     }
-                    else if (latestPayment.Method == PaymentMethod.ManualProof)
+                    else if (latestPayment.Method == PaymentMethod.Cash && latestPayment.Status == PaymentStatus.Pending)
                     {
-                        <p class="mt-3">Your proof of payment has been submitted and is awaiting staff review.</p>
+                        <p class="mt-3">Your cash payment (ref @latestPayment.Reference) is awaiting staff confirmation at the front desk.</p>
                     }
                     else
                     {

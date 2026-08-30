@@ -53,25 +53,21 @@
 
                     @if (latestPayment == null)
                     {
-                        <p class="mt-2 mb-0"><em>No payment submitted yet.</em></p>
-                    }
-                    else if (latestPayment.Method == PaymentMethod.ManualProof)
-                    {
-                        <p class="mt-2 mb-0">
-                            Proof of payment:
-                            <a href="~/@latestPayment.ProofFilePath" target="_blank">View file</a>
-                        </p>
+                        <p class="mt-2 mb-0"><em>No payment method chosen yet.</em></p>
                     }
                     else
                     {
-                        <p class="mt-2 mb-0">Payment method: @latestPayment.Method (@latestPayment.Status)</p>
+                        <p class="mt-2 mb-0">Payment: @latestPayment.Method, R@(latestPayment.Amount.ToString("0.00")), ref @latestPayment.Reference (@latestPayment.Status)</p>
                     }
                 </div>
 
+                @{
+                    var canConfirmCash = latestPayment != null && latestPayment.Method == PaymentMethod.Cash && latestPayment.Status == PaymentStatus.Pending;
+                }
                 <div class="d-flex flex-column gap-2" style="min-width: 220px;">
                     <form asp-action="ReviewMembership" asp-route-id="@membership.Id" method="post">
                         <input type="hidden" name="approve" value="true" />
-                        <button type="submit" class="btn btn-gradient w-100" @(latestPayment == null ? "disabled" : "")>Approve</button>
+                        <button type="submit" class="btn btn-gradient w-100" @(canConfirmCash ? "" : "disabled")>Confirm Cash Payment</button>
                     </form>
                     <form asp-action="ReviewMembership" asp-route-id="@membership.Id" method="post">
                         <input type="hidden" name="approve" value="false" />

@@ -12,13 +12,11 @@ namespace LoginFormASPCore6.Controllers
         private static readonly string[] AllowedProofExtensions = { ".pdf", ".jpg", ".jpeg", ".png" };
         private const long MaxProofFileBytes = 5 * 1024 * 1024;
 
-        private readonly IPaymentGateway gateway;
         private readonly IWebHostEnvironment environment;
         private readonly IConfiguration configuration;
 
-        public MembershipController(MyDbContext db, IPaymentGateway gateway, IWebHostEnvironment environment, IConfiguration configuration) : base(db)
+        public MembershipController(MyDbContext db, IWebHostEnvironment environment, IConfiguration configuration) : base(db)
         {
-            this.gateway = gateway;
             this.environment = environment;
             this.configuration = configuration;
         }
@@ -133,103 +131,14 @@ namespace LoginFormASPCore6.Controllers
             });
         }
 
-        // --- Pay (PB-4) ---------------------------------------------------
+        // --- Pay (PB-4) -----------------------------------------------------
+        // No real payment processor is integrated here (see Services/ReferenceGenerator.cs
+        // and the PaymentMethod/PaymentStatus enums for the design). Card/Eft/MobileMoney
+        // settle immediately since there's no real processor to wait on; Cash stays
+        // Pending until an admin confirms the money was physically received
+        // (AdminController.ReviewMembership).
 
         public async Task<IActionResult> Pay(int id)
-        {
-            var (user, redirect) = RequireStudent();
-            if (redirect != null) return redirect;
-
-            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
-            if (membership == null || membership.UserId != user!.Id) return NotFound();
-            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
-
-            return View(membership);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PayWithGateway(int id)
-        {
-            var (user, redirect) = RequireStudent();
-            if (redirect != null) return redirect;
-
-            var membership = await Db.Memberships.Include(m => m.Plan).FirstOrDefaultAsync(m => m.Id == id);
-            if (membership == null || membership.UserId != user!.Id) return NotFound();
-            if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
-
-            var payment = new Payment
-            {
-                MembershipId = membership.Id,
-                Method = PaymentMethod.Gateway,
-                Amount = membership.TotalCost,
-                Status = PaymentStatus.Pending,
-                GatewayProvider = gateway.ProviderName
-            };
-            Db.Payments.Add(payment);
-            await Db.SaveChangesAsync();
-
-            var returnUrl = Url.Action(nameof(GatewayCallback), "Membership", null, Request.Scheme)!;
-            var cancelUrl = Url.Action(nameof(Pay), "Membership", new { id = membership.Id }, Request.Scheme)!;
-
-            var result = await gateway.InitiatePaymentAsync(new PaymentInitiationRequest
-            {
-                Payment = payment,
-                Plan = membership.Plan!,
-                Student = user!,
-                ReturnUrl = returnUrl,
-                CancelUrl = cancelUrl
-            });
-
-            if (!result.Success || result.RedirectUrl == null)
-            {
-                TempData["Error"] = result.ErrorMessage ?? "Could not start the payment. Please try again.";
-                return RedirectToAction(nameof(Pay), new { id = membership.Id });
-            }
-
-            payment.GatewayReference = result.GatewayReference;
-            await Db.SaveChangesAsync();
-
-            return Redirect(result.RedirectUrl);
-        }
-
-        public async Task<IActionResult> GatewayCallback()
-        {
-            var (user, redirect) = RequireStudent();
-            if (redirect != null) return redirect;
-
-            var callback = await gateway.HandleCallbackAsync(Request);
-            if (!callback.Success)
-            {
-                TempData["Error"] = callback.ErrorMessage ?? "Payment could not be confirmed.";
-                return RedirectToAction(nameof(Status));
-            }
-
-            var payment = await Db.Payments.Include(p => p.Membership).ThenInclude(m => m!.Plan)
-                .FirstOrDefaultAsync(p => p.Id == callback.PaymentId);
-            if (payment == null || payment.Membership == null || payment.Membership.UserId != user!.Id)
-            {
-                return NotFound();
-            }
-
-            payment.Status = PaymentStatus.Verified;
-            payment.VerifiedAt = DateTime.UtcNow;
-            payment.GatewayReference ??= callback.GatewayReference;
-
-            var membership = payment.Membership;
-            membership.Status = MembershipStatus.Active;
-            membership.StartDate = DateTime.UtcNow.Date;
-            membership.ExpiryDate = membership.StartDate.Value.AddMonths(membership.Plan!.DurationMonths);
-
-            await Db.SaveChangesAsync();
-
-            TempData["Success"] = "Payment confirmed - your membership is now active.";
-            return RedirectToAction(nameof(Status));
-        }
-
-        // --- Manual proof of payment (PB-4 alternate path) ----------------
-
-        public async Task<IActionResult> UploadProof(int id)
         {
             var (user, redirect) = RequireStudent();
             if (redirect != null) return redirect;
@@ -244,7 +153,7 @@ namespace LoginFormASPCore6.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadProof(int id, IFormFile proofFile)
+        public async Task<IActionResult> Checkout(int id, PaymentMethod method)
         {
             var (user, redirect) = RequireStudent();
             if (redirect != null) return redirect;
@@ -253,49 +162,31 @@ namespace LoginFormASPCore6.Controllers
             if (membership == null || membership.UserId != user!.Id) return NotFound();
             if (membership.Status != MembershipStatus.Pending) return RedirectToAction(nameof(Status));
 
-            if (proofFile == null || proofFile.Length == 0)
-            {
-                ModelState.AddModelError(string.Empty, "Please choose a file to upload.");
-                return View(membership);
-            }
-
-            var extension = Path.GetExtension(proofFile.FileName).ToLowerInvariant();
-            if (!AllowedProofExtensions.Contains(extension))
-            {
-                ModelState.AddModelError(string.Empty, "Only PDF, JPG, and PNG files are accepted.");
-                return View(membership);
-            }
-
-            if (proofFile.Length > MaxProofFileBytes)
-            {
-                ModelState.AddModelError(string.Empty, "File is too large (5MB max).");
-                return View(membership);
-            }
-
-            var relativeDir = Path.Combine("uploads", "proofs", membership.Id.ToString());
-            var absoluteDir = Path.Combine(environment.WebRootPath, relativeDir);
-            Directory.CreateDirectory(absoluteDir);
-
-            var generatedFileName = $"{Guid.NewGuid():N}{extension}";
-            var absolutePath = Path.Combine(absoluteDir, generatedFileName);
-
-            using (var stream = new FileStream(absolutePath, FileMode.Create))
-            {
-                await proofFile.CopyToAsync(stream);
-            }
+            var isCash = method == PaymentMethod.Cash;
 
             var payment = new Payment
             {
                 MembershipId = membership.Id,
-                Method = PaymentMethod.ManualProof,
+                Method = method,
                 Amount = membership.TotalCost,
-                Status = PaymentStatus.Pending,
-                ProofFilePath = Path.Combine(relativeDir, generatedFileName).Replace('\\', '/')
+                Reference = ReferenceGenerator.Generate("PAY"),
+                Status = isCash ? PaymentStatus.Pending : PaymentStatus.Paid,
+                PaidAt = isCash ? null : DateTime.UtcNow
             };
             Db.Payments.Add(payment);
+
+            if (!isCash)
+            {
+                membership.Status = MembershipStatus.Active;
+                membership.StartDate = DateTime.UtcNow.Date;
+                membership.ExpiryDate = membership.StartDate.Value.AddMonths(membership.Plan!.DurationMonths);
+            }
+
             await Db.SaveChangesAsync();
 
-            TempData["Success"] = "Proof of payment submitted. A staff member will review it shortly.";
+            TempData["Success"] = isCash
+                ? "Your cash payment has been recorded - pay at the front desk. Your membership activates once staff confirm receipt."
+                : "Payment confirmed - your membership is now active.";
             return RedirectToAction(nameof(Status));
         }
 

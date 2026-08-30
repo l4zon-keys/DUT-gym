@@ -1,0 +1,95 @@
+@*
+    Fake checkout UI - no real payment processor is ever wired up (see
+    Models/MembershipEnums.cs PaymentMethod/PaymentStatus for the design). The
+    Card/EFT/Mobile Money detail fields below deliberately have NO name attribute,
+    so even though they look and behave like a real checkout form, nothing
+    resembling card or banking data is ever submitted to the server.
+
+    Expects: ViewBag.GymBanking (IConfigurationSection) for the EFT panel.
+*@
+
+<div class="payment-method-picker">
+    <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="method" id="method-cash" value="Cash" checked />
+            <label class="form-check-label" for="method-cash">Cash (pay at the front desk)</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="method" id="method-card" value="Card" />
+            <label class="form-check-label" for="method-card">Card</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="method" id="method-eft" value="Eft" />
+            <label class="form-check-label" for="method-eft">EFT</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="method" id="method-mobilemoney" value="MobileMoney" />
+            <label class="form-check-label" for="method-mobilemoney">Mobile Money</label>
+        </div>
+    </div>
+
+    <div id="panel-Cash" class="payment-detail-panel">
+        <div class="form-text-hint">
+            Your membership will stay pending until a staff member confirms your cash payment at the front desk.
+        </div>
+    </div>
+
+    <div id="panel-Card" class="payment-detail-panel d-none">
+        <div class="mb-2">
+            <label class="form-label">Card Number</label>
+            <input type="text" class="form-control" placeholder="4111 1111 1111 1111" maxlength="19" autocomplete="off" />
+        </div>
+        <div class="row g-2">
+            <div class="col-7">
+                <label class="form-label">Cardholder Name</label>
+                <input type="text" class="form-control" placeholder="Full name" autocomplete="off" />
+            </div>
+            <div class="col-3">
+                <label class="form-label">Expiry</label>
+                <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" autocomplete="off" />
+            </div>
+            <div class="col-2">
+                <label class="form-label">CVV</label>
+                <input type="text" class="form-control" placeholder="123" maxlength="4" autocomplete="off" />
+            </div>
+        </div>
+    </div>
+
+    <div id="panel-Eft" class="payment-detail-panel d-none">
+        <div class="alert alert-info mb-0">
+            <strong>Pay via EFT to:</strong><br />
+            Bank: @ViewBag.GymBanking["BankName"]<br />
+            Account Name: @ViewBag.GymBanking["AccountName"]<br />
+            Account Number: @ViewBag.GymBanking["AccountNumber"]<br />
+            Branch Code: @ViewBag.GymBanking["BranchCode"]<br />
+            <span class="form-text-hint">@ViewBag.GymBanking["ReferenceHint"]</span>
+        </div>
+    </div>
+
+    <div id="panel-MobileMoney" class="payment-detail-panel d-none">
+        <label class="form-label">Mobile Number</label>
+        <input type="tel" class="form-control" placeholder="082 123 4567" autocomplete="off" />
+    </div>
+</div>
+
+<script>
+    (function () {
+        var radios = document.querySelectorAll('input[name="method"]');
+        var panels = document.querySelectorAll('.payment-detail-panel');
+
+        function showPanelFor(method) {
+            panels.forEach(function (panel) {
+                panel.classList.toggle('d-none', panel.id !== 'panel-' + method);
+            });
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                showPanelFor(radio.value);
+            });
+        });
+
+        var checked = document.querySelector('input[name="method"]:checked');
+        if (checked) showPanelFor(checked.value);
+    })();
+</script>

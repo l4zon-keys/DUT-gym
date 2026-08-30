@@ -11,6 +11,10 @@
     {
         <div class="alert alert-success">@TempData["Success"]</div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
 
     <div class="section-card mb-4">
         <div class="info-row">

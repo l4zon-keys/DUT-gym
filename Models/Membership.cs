@@ -64,8 +64,8 @@ namespace LoginFormASPCore6.Models
         // plan prices change later. Falls back to the live quote only if nothing's been paid yet.
         [NotMapped]
         public decimal AmountPaid => Payments
-            .Where(p => p.Status == PaymentStatus.Verified)
-            .OrderByDescending(p => p.VerifiedAt)
+            .Where(p => p.Status == PaymentStatus.Paid)
+            .OrderByDescending(p => p.PaidAt)
             .Select(p => (decimal?)p.Amount)
             .FirstOrDefault() ?? TotalCost;
 

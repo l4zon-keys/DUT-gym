@@ -127,9 +127,9 @@ namespace LoginFormASPCore6.Models
                     .HasForeignKey(e => e.MembershipId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.VerifiedByUser)
+                entity.HasOne(e => e.ConfirmedByUser)
                     .WithMany()
-                    .HasForeignKey(e => e.VerifiedByUserId)
+                    .HasForeignKey(e => e.ConfirmedByUserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

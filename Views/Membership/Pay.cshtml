@@ -19,12 +19,9 @@
             <div class="alert alert-danger">@TempData["Error"]</div>
         }
 
-        <form asp-action="PayWithGateway" asp-route-id="@Model.Id" method="post" class="mb-3">
-            <button type="submit" class="btn btn-gradient w-100">Pay Now (Online)</button>
+        <form asp-action="Checkout" asp-route-id="@Model.Id" method="post">
+            @await Html.PartialAsync("_PaymentMethodPicker")
+            <button type="submit" class="btn btn-gradient w-100 mt-3">Pay</button>
         </form>
-
-        <div class="text-center form-text-hint mb-3">or</div>
-
-        <a asp-action="UploadProof" asp-route-id="@Model.Id" class="btn btn-outline-primary w-100">Upload Proof of Payment</a>
     </div>
 </div>

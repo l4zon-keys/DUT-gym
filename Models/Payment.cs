@@ -20,23 +20,19 @@ namespace LoginFormASPCore6.Models
 
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
-        [StringLength(50)]
-        public string? GatewayProvider { get; set; }
-
-        [StringLength(100)]
-        public string? GatewayReference { get; set; }
-
-        // Relative path under wwwroot/uploads/proofs/ — never a client-supplied filename.
-        [StringLength(260)]
-        public string? ProofFilePath { get; set; }
+        [Required]
+        [StringLength(20)]
+        public string Reference { get; set; } = null!;
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
-        public int? VerifiedByUserId { get; set; }
+        // When it actually settled - immediately for Card/Eft/MobileMoney, or when
+        // an admin confirms a Cash payment was physically received.
+        public DateTime? PaidAt { get; set; }
 
-        [ForeignKey(nameof(VerifiedByUserId))]
-        public User? VerifiedByUser { get; set; }
+        public int? ConfirmedByUserId { get; set; }
 
-        public DateTime? VerifiedAt { get; set; }
+        [ForeignKey(nameof(ConfirmedByUserId))]
+        public User? ConfirmedByUser { get; set; }
     }
 }

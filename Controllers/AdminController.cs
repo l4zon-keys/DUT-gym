@@ -113,11 +113,10 @@ namespace LoginFormASPCore6.Controllers
             membership.ReviewedAt = null;
 
             var latestPayment = membership.Payments.OrderByDescending(p => p.SubmittedAt).FirstOrDefault();
-            if (latestPayment != null && latestPayment.Status == PaymentStatus.Rejected)
+            if (latestPayment != null && latestPayment.Status == PaymentStatus.Failed)
             {
                 latestPayment.Status = PaymentStatus.Pending;
-                latestPayment.VerifiedByUserId = null;
-                latestPayment.VerifiedAt = null;
+                latestPayment.ConfirmedByUserId = null;
             }
 
             await Db.SaveChangesAsync();
@@ -125,6 +124,10 @@ namespace LoginFormASPCore6.Controllers
             return RedirectToAction(nameof(PendingMemberships));
         }
 
+        // Confirming (approve=true) only makes sense for a Cash payment sitting
+        // Pending - Card/Eft/MobileMoney settle instantly in Checkout() and never
+        // reach this queue. Rejecting can happen either way (e.g. cash never shows
+        // up, or the application itself is invalid).
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReviewMembership(int id, bool approve, string? reason)
@@ -141,9 +144,9 @@ namespace LoginFormASPCore6.Controllers
 
             var latestPayment = membership.Payments.OrderByDescending(p => p.SubmittedAt).FirstOrDefault();
 
-            if (approve && latestPayment == null)
+            if (approve && (latestPayment == null || latestPayment.Method != PaymentMethod.Cash || latestPayment.Status != PaymentStatus.Pending))
             {
-                TempData["Error"] = "This application has no payment submitted yet and cannot be approved.";
+                TempData["Error"] = "There's no cash payment awaiting confirmation for this application.";
                 return RedirectToAction(nameof(PendingMemberships));
             }
 
@@ -153,23 +156,18 @@ namespace LoginFormASPCore6.Controllers
                 membership.StartDate = DateTime.UtcNow.Date;
                 membership.ExpiryDate = membership.StartDate.Value.AddMonths(membership.Plan!.DurationMonths);
 
-                if (latestPayment != null)
-                {
-                    latestPayment.Status = PaymentStatus.Verified;
-                    latestPayment.VerifiedByUserId = admin!.Id;
-                    latestPayment.VerifiedAt = DateTime.UtcNow;
-                }
+                latestPayment!.Status = PaymentStatus.Paid;
+                latestPayment.PaidAt = DateTime.UtcNow;
+                latestPayment.ConfirmedByUserId = admin!.Id;
             }
             else
             {
                 membership.Status = MembershipStatus.Rejected;
                 membership.RejectionReason = string.IsNullOrWhiteSpace(reason) ? "Not specified." : reason;
 
-                if (latestPayment != null)
+                if (latestPayment != null && latestPayment.Status == PaymentStatus.Pending)
                 {
-                    latestPayment.Status = PaymentStatus.Rejected;
-                    latestPayment.VerifiedByUserId = admin!.Id;
-                    latestPayment.VerifiedAt = DateTime.UtcNow;
+                    latestPayment.Status = PaymentStatus.Failed;
                 }
             }
 
@@ -177,7 +175,7 @@ namespace LoginFormASPCore6.Controllers
             membership.ReviewedAt = DateTime.UtcNow;
 
             await Db.SaveChangesAsync();
-            TempData["Success"] = approve ? "Membership approved." : "Membership rejected.";
+            TempData["Success"] = approve ? "Cash payment confirmed - membership is now active." : "Membership rejected.";
             return RedirectToAction(nameof(PendingMemberships));
         }
 
