@@ -34,7 +34,7 @@ namespace LoginFormASPCore6.Models
 
         [Required(ErrorMessage = "Please provide an emergency contact phone number.")]
         [DisplayName("Emergency Contact Phone")]
-        [Phone]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be exactly 10 digits.")]
         [StringLength(20)]
         public string EmergencyContactPhone { get; set; } = null!;
 

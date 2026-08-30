@@ -35,7 +35,7 @@
 
                             <div class="mb-3">
                                 <label asp-for="StudentNumber" class="form-label">ID / Staff Number</label>
-                                <input asp-for="StudentNumber" class="form-control" placeholder="Staff or ID number" />
+                                <input asp-for="StudentNumber" class="form-control" placeholder="Staff or ID number" maxlength="8" inputmode="numeric" />
                                 <span asp-validation-for="StudentNumber" class="text-danger"></span>
                             </div>
 

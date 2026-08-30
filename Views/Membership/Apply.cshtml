@@ -40,7 +40,7 @@
 
             <div class="mb-3">
                 <label asp-for="EmergencyContactPhone" class="form-label"></label>
-                <input asp-for="EmergencyContactPhone" class="form-control" />
+                <input asp-for="EmergencyContactPhone" class="form-control" placeholder="e.g. 0821234567" maxlength="10" inputmode="numeric" />
                 <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
             </div>
 
