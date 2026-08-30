@@ -1,6 +1,7 @@
 using System.Globalization;
 using LoginFormASPCore6.Models;
 using LoginFormASPCore6.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 // HTML number/date inputs always send period-decimal, invariant-format values
@@ -49,6 +50,33 @@ else
 builder.Services.AddHostedService<TrainerReminderBackgroundService>();
 
 var app = builder.Build();
+
+// Dev-only seeded admin so there's always a known way in locally without manual
+// SQL. Gated to Development so this known password never exists on a real
+// deployment (Azure, etc.) - only ever runs against your own LocalDB.
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+    db.Database.Migrate();
+
+    const string devAdminEmail = "admin@dut.ac.za";
+    if (!db.Users.Any(u => u.Email == devAdminEmail))
+    {
+        var hasher = new PasswordHasher<User>();
+        var admin = new User
+        {
+            EmpName = "Admin",
+            Gender = "Male",
+            StudentNumber = "00000000",
+            Email = devAdminEmail,
+            Role = EmailRoleHelper.AdminRole
+        };
+        admin.Password = hasher.HashPassword(admin, "Admin123!");
+        db.Users.Add(admin);
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
