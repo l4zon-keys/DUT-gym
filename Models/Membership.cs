@@ -82,8 +82,10 @@ namespace LoginFormASPCore6.Models
 
         public DateTime? ReviewedAt { get; set; }
 
+        // Why the membership is Rejected or Deactivated - one shared field rather
+        // than a separate reason column per negative status.
         [StringLength(300)]
-        public string? RejectionReason { get; set; }
+        public string? StatusNote { get; set; }
 
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }

@@ -94,7 +94,7 @@
                     <div>
                         <h6 class="mb-1">@membership.User!.EmpName <span class="form-text-hint">(@membership.User.StudentNumber)</span></h6>
                         <p class="mb-1">@membership.Plan!.Name</p>
-                        <p class="form-text-hint mb-0">Reason: @membership.RejectionReason</p>
+                        <p class="form-text-hint mb-0">Reason: @membership.StatusNote</p>
                     </div>
                     <form asp-action="UndoRejection" asp-route-id="@membership.Id" method="post">
                         <button type="submit" class="btn btn-outline-primary">Undo Rejection</button>

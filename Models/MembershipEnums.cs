@@ -5,7 +5,10 @@ namespace LoginFormASPCore6.Models
         Pending,
         Active,
         Rejected,
-        Expired
+        Expired,
+        // Admin-initiated early termination of an Active membership - distinct from
+        // Expired (which just means the paid-up period ran out naturally).
+        Deactivated
     }
 
     // No real payment processor is ever integrated (no gateway API, no card

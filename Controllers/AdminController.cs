@@ -146,7 +146,7 @@ namespace LoginFormASPCore6.Controllers
             if (membership.Status != MembershipStatus.Rejected) return RedirectToAction(nameof(PendingMemberships));
 
             membership.Status = MembershipStatus.Pending;
-            membership.RejectionReason = null;
+            membership.StatusNote = null;
             membership.ReviewedByUserId = null;
             membership.ReviewedAt = null;
 
@@ -201,7 +201,7 @@ namespace LoginFormASPCore6.Controllers
             else
             {
                 membership.Status = MembershipStatus.Rejected;
-                membership.RejectionReason = string.IsNullOrWhiteSpace(reason) ? "Not specified." : reason;
+                membership.StatusNote = string.IsNullOrWhiteSpace(reason) ? "Not specified." : reason;
 
                 if (latestPayment != null && latestPayment.Status == PaymentStatus.Pending)
                 {
@@ -240,7 +240,59 @@ namespace LoginFormASPCore6.Controllers
             }
 
             var members = await query.OrderBy(m => m.User!.EmpName).ToListAsync();
+
+            // Recently deactivated, in case one needs reversing.
+            ViewBag.RecentlyDeactivated = await Db.Memberships
+                .Include(m => m.User)
+                .Include(m => m.Plan)
+                .Where(m => m.Status == MembershipStatus.Deactivated)
+                .OrderByDescending(m => m.ReviewedAt)
+                .Take(10)
+                .ToListAsync();
+
             return View(members);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateMembership(int id, string? reason)
+        {
+            var (admin, redirect) = RequireAdmin();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null) return NotFound();
+            if (membership.Status != MembershipStatus.Active) return RedirectToAction(nameof(ActiveMembers));
+
+            membership.Status = MembershipStatus.Deactivated;
+            membership.StatusNote = string.IsNullOrWhiteSpace(reason) ? "Not specified." : reason;
+            membership.ReviewedByUserId = admin!.Id;
+            membership.ReviewedAt = DateTime.UtcNow;
+
+            await Db.SaveChangesAsync();
+            TempData["Success"] = "Membership deactivated.";
+            return RedirectToAction(nameof(ActiveMembers));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReactivateMembership(int id)
+        {
+            var (admin, redirect) = RequireAdmin();
+            if (redirect != null) return redirect;
+
+            var membership = await Db.Memberships.FirstOrDefaultAsync(m => m.Id == id);
+            if (membership == null) return NotFound();
+            if (membership.Status != MembershipStatus.Deactivated) return RedirectToAction(nameof(ActiveMembers));
+
+            membership.Status = MembershipStatus.Active;
+            membership.StatusNote = null;
+            membership.ReviewedByUserId = admin!.Id;
+            membership.ReviewedAt = DateTime.UtcNow;
+
+            await Db.SaveChangesAsync();
+            TempData["Success"] = "Membership reactivated.";
+            return RedirectToAction(nameof(ActiveMembers));
         }
 
         public async Task<IActionResult> EditMembership(int id)

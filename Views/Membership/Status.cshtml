@@ -87,7 +87,18 @@
                 {
                     <div class="info-row">
                         <span class="info-label">Reason</span>
-                        <span class="info-value">@Model.RejectionReason</span>
+                        <span class="info-value">@Model.StatusNote</span>
+                    </div>
+                    <div class="mt-4">
+                        <a asp-action="Apply" class="btn btn-gradient">Apply Again</a>
+                    </div>
+                }
+                else if (Model.Status == MembershipStatus.Deactivated)
+                {
+                    <p class="mt-3">Your membership has been deactivated by gym staff.</p>
+                    <div class="info-row">
+                        <span class="info-label">Reason</span>
+                        <span class="info-value">@Model.StatusNote</span>
                     </div>
                     <div class="mt-4">
                         <a asp-action="Apply" class="btn btn-gradient">Apply Again</a>

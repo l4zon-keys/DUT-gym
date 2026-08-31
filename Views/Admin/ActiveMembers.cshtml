@@ -45,12 +45,43 @@
                             <td>@(membership.PersonalTrainerOption == PersonalTrainerOption.None ? "-" : PersonalTrainerPricing.GetLabel(membership.PersonalTrainerOption))</td>
                             <td>@membership.ExpiryDate?.ToString("d")</td>
                             <td class="text-end">
-                                <a asp-action="EditMembership" asp-route-id="@membership.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <div class="d-flex gap-2 justify-content-end align-items-center flex-wrap">
+                                    <a asp-action="EditMembership" asp-route-id="@membership.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form asp-action="DeactivateMembership" asp-route-id="@membership.Id" method="post" class="d-flex gap-1">
+                                        <input type="text" name="reason" class="form-control form-control-sm" placeholder="Reason" style="width: 120px;" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+    }
+
+    @{
+        var recentlyDeactivated = (List<Membership>)ViewBag.RecentlyDeactivated;
+    }
+    @if (recentlyDeactivated.Any())
+    {
+        <h4 class="mt-5 mb-3">Recently Deactivated</h4>
+        <p class="form-text-hint mb-3">Deactivated by mistake? Reactivate it here.</p>
+
+        @foreach (var membership in recentlyDeactivated)
+        {
+            <div class="section-card mb-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <h6 class="mb-1">@membership.User!.EmpName <span class="form-text-hint">(@membership.User.StudentNumber)</span></h6>
+                        <p class="mb-1">@membership.Plan!.Name</p>
+                        <p class="form-text-hint mb-0">Reason: @membership.StatusNote</p>
+                    </div>
+                    <form asp-action="ReactivateMembership" asp-route-id="@membership.Id" method="post">
+                        <button type="submit" class="btn btn-outline-primary">Reactivate</button>
+                    </form>
+                </div>
+            </div>
+        }
     }
 </div>
