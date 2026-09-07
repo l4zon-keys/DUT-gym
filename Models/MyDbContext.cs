@@ -29,6 +29,7 @@ namespace LoginFormASPCore6.Models
         public virtual DbSet<FitnessGoal> FitnessGoals { get; set; } = null!;
         public virtual DbSet<ProgressLog> ProgressLogs { get; set; } = null!;
         public virtual DbSet<SessionBooking> SessionBookings { get; set; } = null!;
+        public virtual DbSet<Equipment> Equipment { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -92,6 +93,11 @@ namespace LoginFormASPCore6.Models
                 entity.HasOne(e => e.Venue)
                     .WithMany()
                     .HasForeignKey(e => e.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Instructor)
+                    .WithMany()
+                    .HasForeignKey(e => e.InstructorUserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -224,6 +230,17 @@ namespace LoginFormASPCore6.Models
                 entity.HasOne(e => e.User)
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Equipment>(entity =>
+            {
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.Severity).HasConversion<string>().HasMaxLength(20);
+
+                entity.HasOne(e => e.ReportedByUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReportedByUserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

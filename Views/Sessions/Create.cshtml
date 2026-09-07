@@ -23,6 +23,18 @@
                 <span asp-validation-for="VenueId" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label asp-for="Category" class="form-label"></label>
+                <input asp-for="Category" class="form-control" placeholder="e.g. Aerobics, Zumba, Yoga" />
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="InstructorUserId" class="form-label"></label>
+                <select asp-for="InstructorUserId" asp-items="@((IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Instructors)" class="form-control">
+                    <option value="">None</option>
+                </select>
+                <span asp-validation-for="InstructorUserId" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
                 <label asp-for="StartTime" class="form-label"></label>
                 <input asp-for="StartTime" class="form-control" />
                 <span asp-validation-for="StartTime" class="text-danger"></span>
@@ -45,6 +57,7 @@
 
             <button type="submit" class="btn btn-gradient">Create Session</button>
             <a asp-action="Manage" class="btn btn-outline-primary">Cancel</a>
+            <a asp-action="CreateRecurring" class="btn btn-outline-primary">Create Recurring Class Instead</a>
         </form>
     </div>
 </div>

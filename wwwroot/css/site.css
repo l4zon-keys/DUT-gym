@@ -402,6 +402,84 @@ h1, h2, h3, h4, h5, h6 {
         opacity: 0.85;
     }
 
+/* Goal progress bar */
+.progress-track {
+    width: 100%;
+    height: 0.6rem;
+    background: #f4f7fb;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--dut-gradient);
+    border-radius: 1rem;
+    transition: width 0.3s ease;
+}
+
+/* Equipment status badges */
+.status-faulty { background: #f8d7da; color: #b02a37; }
+.status-undermaintenance { background: #fff3cd; color: #7a5b00; }
+.status-inactive { background: #e4e9f0; color: var(--dut-muted); }
+
+.severity-low { background: #d1e7dd; color: #146c43; }
+.severity-medium { background: #fff3cd; color: #7a5b00; }
+.severity-high { background: #ffe0b3; color: #93460a; }
+.severity-critical { background: #f8d7da; color: #b02a37; }
+
+/* Dashboard stat tiles / icons */
+.stat-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: #fff;
+    border: 1px solid var(--dut-border);
+    border-radius: 1rem;
+    padding: 1.1rem 1.4rem;
+    box-shadow: 0 6px 24px rgba(10, 38, 71, 0.05);
+}
+
+.stat-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.9rem;
+    background: var(--dut-gradient);
+    color: #fff;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.stat-tile-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--dut-muted);
+    font-weight: 600;
+}
+
+.stat-tile-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--dut-text);
+}
+
+.info-row .bi {
+    color: var(--dut-blue-accent);
+    margin-right: 0.4rem;
+}
+
+/* Chat-style meal suggestion cards */
+.chat-bubble {
+    background: #f4f7fb;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
 /* Printable receipt */
 @media print {
     header, footer, .no-print {

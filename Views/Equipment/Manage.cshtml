@@ -1,0 +1,114 @@
+@model List<Equipment>
+
+@{
+    ViewData["Title"] = "Equipment";
+}
+
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="bi bi-tools"></i> Equipment</h1>
+        <a asp-action="Create" class="btn btn-gradient">Add Equipment</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No equipment registered yet.</p>
+    }
+
+    @foreach (var item in Model)
+    {
+        var statusClass = item.Status switch
+        {
+            EquipmentStatus.Active => "status-active",
+            EquipmentStatus.Faulty => "status-faulty",
+            EquipmentStatus.UnderMaintenance => "status-undermaintenance",
+            _ => "status-inactive"
+        };
+
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@item.Name</h5>
+                    @if (!string.IsNullOrEmpty(item.Location))
+                    {
+                        <p class="form-text-hint mb-1">@item.Location</p>
+                    }
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <span class="status-badge @statusClass">@item.Status</span>
+                        @if (item.Status == EquipmentStatus.Faulty && item.Severity != null)
+                        {
+                            <span class="status-badge severity-@item.Severity.ToString()!.ToLower()">@item.Severity Severity</span>
+                        }
+                    </div>
+                    @if (item.Status == EquipmentStatus.Faulty)
+                    {
+                        <p class="mb-0 mt-2">
+                            @if (!string.IsNullOrEmpty(item.Notes))
+                            {
+                                <span>@item.Notes<br /></span>
+                            }
+                            <span class="form-text-hint">Reported by @(item.ReportedByUser?.EmpName ?? "-") on @item.ReportedAt?.ToString("g")</span>
+                        </p>
+                    }
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (item.Status != EquipmentStatus.Faulty)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#fault-@item.Id">Report Fault</button>
+                    }
+                    @if (item.Status == EquipmentStatus.Faulty)
+                    {
+                        <form asp-action="MarkUnderMaintenance" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Send for Maintenance</button>
+                        </form>
+                    }
+                    @if (item.Status is EquipmentStatus.Faulty or EquipmentStatus.UnderMaintenance)
+                    {
+                        <form asp-action="MarkResolved" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Mark Resolved</button>
+                        </form>
+                    }
+                    @if (item.Status != EquipmentStatus.Inactive)
+                    {
+                        <form asp-action="MarkInactive" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Mark Inactive</button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            @if (item.Status != EquipmentStatus.Faulty)
+            {
+                <div class="collapse mt-3" id="fault-@item.Id">
+                    <form asp-action="ReportFault" method="post" class="d-flex gap-2 align-items-end flex-wrap">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <div>
+                            <label class="form-label">Severity</label>
+                            <select name="severity" class="form-control">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="flex-grow-1">
+                            <label class="form-label">Notes</label>
+                            <input type="text" name="notes" class="form-control" placeholder="What's wrong?" />
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-gradient">Submit</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+</div>

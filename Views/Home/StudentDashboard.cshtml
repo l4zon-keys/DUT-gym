@@ -5,6 +5,7 @@
     ViewData["Title"] = "Student Dashboard";
     var membership = ViewBag.Membership as Membership;
     var capacity = ViewBag.Capacity as CapacityStatus;
+    var streak = (int)ViewBag.Streak;
 }
 
 <div class="py-4">
@@ -22,20 +23,31 @@
                 </div>
             }
 
+            @if (streak >= 3)
+            {
+                <div class="mb-3">
+                    <span class="status-badge status-active"><i class="bi bi-fire"></i> @(streak)-month streak</span>
+                </div>
+            }
+
             <div class="info-row">
-                <span class="info-label">Full Name</span>
+                <span class="info-label"><i class="bi bi-person"></i>Full Name</span>
                 <span class="info-value">@Model.EmpName</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Student Number</span>
+                <span class="info-label"><i class="bi bi-card-text"></i>Student Number</span>
                 <span class="info-value">@Model.StudentNumber</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Email</span>
+                <span class="info-label"><i class="bi bi-envelope"></i>Email</span>
                 <span class="info-value">@Model.Email</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Membership</span>
+                <span class="info-label"><i class="bi bi-award"></i>Membership Plan</span>
+                <span class="info-value">@(membership?.Plan?.Name ?? "-")</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><i class="bi bi-shield-check"></i>Membership Status</span>
                 <span class="info-value">
                     @if (membership == null)
                     {
@@ -60,6 +72,10 @@
                 {
                     <a asp-controller="Membership" asp-action="Status" class="btn btn-gradient">View Membership Status</a>
                 }
+                <a asp-controller="Goals" asp-action="MyGoal" class="btn btn-outline-primary">My Fitness Goal</a>
+                <a asp-controller="Trainers" asp-action="MyTrainer" class="btn btn-outline-primary">My Trainer &amp; Plans</a>
+                <a asp-controller="Sessions" asp-action="Browse" class="btn btn-outline-primary">Class Schedule</a>
+                <a asp-controller="Meals" asp-action="Index" class="btn btn-outline-primary">Meal Planner</a>
             </div>
         </div>
     </div>

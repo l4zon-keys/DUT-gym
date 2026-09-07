@@ -7,7 +7,10 @@
 <div class="py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">Sessions</h1>
-        <a asp-action="Create" class="btn btn-gradient">New Session</a>
+        <div class="d-flex gap-2">
+            <a asp-action="CreateRecurring" class="btn btn-outline-primary">New Recurring Class</a>
+            <a asp-action="Create" class="btn btn-gradient">New Session</a>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)
@@ -20,7 +23,9 @@
             <thead>
                 <tr>
                     <th>Title</th>
+                    <th>Category</th>
                     <th>Venue</th>
+                    <th>Instructor</th>
                     <th>Start</th>
                     <th>End</th>
                     <th>Capacity</th>
@@ -32,7 +37,9 @@
                 {
                     <tr>
                         <td>@session.Title</td>
+                        <td>@(session.Category ?? "-")</td>
                         <td>@session.Venue?.Name</td>
+                        <td>@(session.Instructor?.EmpName ?? "-")</td>
                         <td>@session.StartTime.ToString("g")</td>
                         <td>@session.EndTime.ToString("g")</td>
                         <td>@session.Capacity</td>

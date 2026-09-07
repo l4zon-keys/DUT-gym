@@ -55,5 +55,52 @@ namespace Testing
             var result = AttendanceReportService.GroupByMonth(new List<DateTime>());
             Assert.Empty(result);
         }
+
+        [Fact]
+        public void GroupByDayOfWeek_ReturnsAll7Days_EvenWithNoData()
+        {
+            var result = AttendanceReportService.GroupByDayOfWeek(new List<DateTime>());
+
+            Assert.Equal(7, result.Count);
+            Assert.All(result.Values, v => Assert.Equal(0, v));
+        }
+
+        [Fact]
+        public void GroupByDayOfWeek_CountsCorrectDay()
+        {
+            var times = new List<DateTime>
+            {
+                new DateTime(2026, 3, 16), // Monday
+                new DateTime(2026, 3, 23), // Monday
+                new DateTime(2026, 3, 18), // Wednesday
+            };
+
+            var result = AttendanceReportService.GroupByDayOfWeek(times);
+
+            Assert.Equal(2, result[DayOfWeek.Monday]);
+            Assert.Equal(1, result[DayOfWeek.Wednesday]);
+            Assert.Equal(0, result[DayOfWeek.Friday]);
+        }
+
+        [Fact]
+        public void CalculateAverageMinutes_IgnoresOpenCheckIns()
+        {
+            var visits = new List<(DateTime In, DateTime? Out)>
+            {
+                (new DateTime(2026, 3, 1, 8, 0, 0), new DateTime(2026, 3, 1, 9, 0, 0)),
+                (new DateTime(2026, 3, 2, 8, 0, 0), null),
+            };
+
+            var average = AttendanceReportService.CalculateAverageMinutes(visits);
+
+            Assert.Equal(60, average);
+        }
+
+        [Fact]
+        public void CalculateAverageMinutes_NoCompletedVisits_ReturnsZero()
+        {
+            var visits = new List<(DateTime In, DateTime? Out)> { (DateTime.UtcNow, null) };
+            Assert.Equal(0, AttendanceReportService.CalculateAverageMinutes(visits));
+        }
     }
 }

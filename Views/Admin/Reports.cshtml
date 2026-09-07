@@ -1,16 +1,30 @@
 @model LoginFormASPCore6.Services.AttendanceReport
+@using LoginFormASPCore6.Services
 
 @{
     ViewData["Title"] = "Attendance Reports";
     var maxHourCount = Model.PeakHours.Any() ? Model.PeakHours.Values.Max() : 0;
+    var maxDayCount = Model.PeakDays.Any() ? Model.PeakDays.Values.Max() : 0;
+    var dayOrder = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+    var leaderboard = ViewBag.Leaderboard as List<LeaderboardEntry>;
 }
 
 <div class="py-4">
     <h1 class="mb-4">Attendance &amp; Usage Reports</h1>
 
-    <div class="section-card mb-4">
-        <span class="info-label">Total Check-Ins</span>
-        <div class="plan-price">@Model.TotalCheckIns</div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="section-card h-100">
+                <span class="info-label">Total Check-Ins</span>
+                <div class="plan-price">@Model.TotalCheckIns</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="section-card h-100">
+                <span class="info-label">Average Time Spent Per Visit</span>
+                <div class="plan-price">@Model.AverageVisitMinutes.ToString("0") min</div>
+            </div>
+        </div>
     </div>
 
     <div class="section-card mb-4">
@@ -37,7 +51,32 @@
         }
     </div>
 
-    <div class="section-card">
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Peak Days</h5>
+        @if (Model.TotalCheckIns == 0)
+        {
+            <p class="text-muted">No check-in data yet.</p>
+        }
+        else
+        {
+            <div class="report-bars">
+                @foreach (var day in dayOrder)
+                {
+                    var count = Model.PeakDays.GetValueOrDefault(day, 0);
+                    var heightPct = maxDayCount == 0 ? 0 : Math.Max(4, (int)(100.0 * count / maxDayCount));
+                    <div class="report-bar-col" title="@day - @count check-in(s)">
+                        <div class="report-bar-track">
+                            <div class="report-bar" style="height: @(heightPct)%;"></div>
+                        </div>
+                        <small>@day.ToString().Substring(0, 3)</small>
+                    </div>
+                }
+            </div>
+            <p class="form-text-hint mt-2 mb-0">Day of week, bar height = number of check-ins.</p>
+        }
+    </div>
+
+    <div class="section-card mb-4">
         <h5 class="mb-3">Monthly Attendance</h5>
         @if (!Model.MonthlyTotals.Any())
         {
@@ -51,6 +90,30 @@
                     @foreach (var month in Model.MonthlyTotals)
                     {
                         <tr><td>@month.Key</td><td>@month.Value</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="section-card">
+        <h5 class="mb-3">Leaderboard - @DateTime.UtcNow.ToString("MMMM yyyy")</h5>
+        @if (leaderboard == null || !leaderboard.Any())
+        {
+            <p class="text-muted">No check-ins recorded this month yet.</p>
+        }
+        else
+        {
+            <table class="table align-middle mb-0">
+                <thead><tr><th>#</th><th>Name</th><th>Visits</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < leaderboard.Count; i++)
+                    {
+                        <tr class="@(i == 0 ? "leaderboard-first" : "")">
+                            <td>@(i + 1)</td>
+                            <td>@leaderboard[i].EmpName</td>
+                            <td>@leaderboard[i].VisitCount</td>
+                        </tr>
                     }
                 </tbody>
             </table>

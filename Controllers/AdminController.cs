@@ -11,11 +11,13 @@ namespace LoginFormASPCore6.Controllers
     {
         private readonly IEmailSender emailSender;
         private readonly AttendanceReportService reportService;
+        private readonly AttendanceStreakService streakService;
 
-        public AdminController(MyDbContext db, IEmailSender emailSender, AttendanceReportService reportService) : base(db)
+        public AdminController(MyDbContext db, IEmailSender emailSender, AttendanceReportService reportService, AttendanceStreakService streakService) : base(db)
         {
             this.emailSender = emailSender;
             this.reportService = reportService;
+            this.streakService = streakService;
         }
 
         // --- Trainer applications -------------------------------------------
@@ -102,6 +104,7 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var report = await reportService.BuildReportAsync();
+            ViewBag.Leaderboard = await streakService.GetLeaderboardAsync(DateTime.UtcNow, topN: 10);
             return View(report);
         }
 

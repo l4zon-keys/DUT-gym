@@ -49,6 +49,80 @@ namespace LoginFormASPCore6.Services
         public static List<LeaderboardEntry> RankLeaderboard(IEnumerable<LeaderboardEntry> entries, int topN)
             => entries.OrderByDescending(e => e.VisitCount).ThenBy(e => e.EmpName).Take(topN).ToList();
 
+        // Distinct calendar dates (in checkInTimes) that fall within the Mon-Sun
+        // week containing asOfUtc.
+        public static int CountDistinctDaysInWeek(IEnumerable<DateTime> checkInTimes, DateTime asOfUtc)
+        {
+            var weekStart = StartOfWeek(asOfUtc.Date);
+            var weekEnd = weekStart.AddDays(7);
+            return checkInTimes
+                .Where(t => t.Date >= weekStart && t.Date < weekEnd)
+                .Select(t => t.Date)
+                .Distinct()
+                .Count();
+        }
+
+        private static DateTime StartOfWeek(DateTime date)
+        {
+            var diff = (7 + (int)date.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+            return date.AddDays(-diff);
+        }
+
+        // Average minutes spent per visit, counting only visits that have both a
+        // check-in and a check-out time.
+        public static double CalculateAverageVisitMinutes(IEnumerable<(DateTime In, DateTime? Out)> visits)
+        {
+            var completed = visits
+                .Where(v => v.Out.HasValue)
+                .Select(v => (v.Out!.Value - v.In).TotalMinutes)
+                .ToList();
+            return completed.Count == 0 ? 0 : completed.Average();
+        }
+
+        // Minutes spent so far today: the open check-in's elapsed time if still
+        // inside, otherwise today's completed visit duration, otherwise 0.
+        public static double CalculateTodayMinutes(IEnumerable<(DateTime In, DateTime? Out)> todaysVisits, DateTime nowUtc)
+        {
+            double total = 0;
+            foreach (var visit in todaysVisits)
+            {
+                total += ((visit.Out ?? nowUtc) - visit.In).TotalMinutes;
+            }
+            return total;
+        }
+
+        public async Task<int> GetDaysAttendedThisWeekAsync(int userId, DateTime? asOfUtc = null)
+        {
+            var asOf = asOfUtc ?? DateTime.UtcNow;
+            var weekStart = StartOfWeek(asOf.Date);
+            var weekEnd = weekStart.AddDays(7);
+            var checkInTimes = await db.CheckIns
+                .Where(c => c.UserId == userId && c.CheckInTime >= weekStart && c.CheckInTime < weekEnd)
+                .Select(c => c.CheckInTime)
+                .ToListAsync();
+            return CountDistinctDaysInWeek(checkInTimes, asOf);
+        }
+
+        public async Task<double> GetAverageVisitMinutesAsync(int userId)
+        {
+            var visits = await db.CheckIns
+                .Where(c => c.UserId == userId)
+                .Select(c => new { c.CheckInTime, c.CheckOutTime })
+                .ToListAsync();
+            return CalculateAverageVisitMinutes(visits.Select(v => (v.CheckInTime, v.CheckOutTime)));
+        }
+
+        public async Task<double> GetTodayMinutesAsync(int userId, DateTime? nowUtc = null)
+        {
+            var now = nowUtc ?? DateTime.UtcNow;
+            var today = now.Date;
+            var visits = await db.CheckIns
+                .Where(c => c.UserId == userId && c.CheckInTime >= today && c.CheckInTime < today.AddDays(1))
+                .Select(c => new { c.CheckInTime, c.CheckOutTime })
+                .ToListAsync();
+            return CalculateTodayMinutes(visits.Select(v => (v.CheckInTime, v.CheckOutTime)), now);
+        }
+
         public async Task<int> GetMonthlyStreakAsync(int userId, DateTime? asOfUtc = null)
         {
             var asOf = asOfUtc ?? DateTime.UtcNow;

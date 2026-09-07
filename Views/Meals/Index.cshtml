@@ -1,0 +1,64 @@
+@model List<LoginFormASPCore6.Services.MealMatch>
+@using LoginFormASPCore6.Services
+
+@{
+    ViewData["Title"] = "Meal Planner";
+    var weeklyMenu = ViewBag.WeeklyMenu as List<MenuDay>;
+    var ingredients = ViewBag.Ingredients as string;
+}
+
+<div class="py-4">
+    <h1 class="mb-1"><i class="bi bi-egg-fried"></i> Meal Planner</h1>
+    <p class="form-text-hint mb-4">Tell us what you have in the cupboard, and we'll suggest affordable meals you can make.</p>
+
+    <div class="section-card mb-4">
+        <form asp-action="Suggest" method="post" class="d-flex gap-2 align-items-end flex-wrap">
+            <div class="flex-grow-1">
+                <label class="form-label">Ingredients you have (comma-separated)</label>
+                <input type="text" name="ingredients" class="form-control" placeholder="e.g. rice, onion, tomato" value="@ingredients" />
+            </div>
+            <button type="submit" class="btn btn-gradient">Find Meals</button>
+        </form>
+    </div>
+
+    @if (Model.Any())
+    {
+        <h5 class="mb-3">Meals You Can Make</h5>
+        @foreach (var match in Model)
+        {
+            <div class="chat-bubble">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <h6 class="mb-1">@match.Recipe.Name</h6>
+                    <span class="status-badge status-active">@($"~R{match.Recipe.EstimatedCostRand}")</span>
+                </div>
+                <p class="mb-1 form-text-hint">Ingredients: @string.Join(", ", match.Recipe.Ingredients)</p>
+                <p class="mb-0">@match.Recipe.Instructions</p>
+            </div>
+        }
+    }
+    else if (!string.IsNullOrEmpty(ingredients))
+    {
+        <p class="text-muted mb-4">No close matches yet - try adding a few more ingredients (e.g. rice, eggs, onion, tomato).</p>
+    }
+
+    @if (weeklyMenu != null)
+    {
+        <h5 class="mt-4 mb-3">This Week's Meal-Prep Menu</h5>
+        <div class="section-card">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th></tr></thead>
+                <tbody>
+                    @foreach (var day in weeklyMenu)
+                    {
+                        <tr>
+                            <td>@day.Day</td>
+                            <td>@day.Breakfast.Name</td>
+                            <td>@day.Lunch.Name</td>
+                            <td>@day.Dinner.Name</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

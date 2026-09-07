@@ -4,6 +4,7 @@ using LoginFormASPCore6.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LoginFormASPCore6.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907001544_AddSessionCategoryAndInstructor")]
+    partial class AddSessionCategoryAndInstructor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,7 +56,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CheckIns", (string)null);
+                    b.ToTable("CheckIns");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Equipment", b =>
@@ -99,7 +102,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("ReportedByUserId");
 
-                    b.ToTable("Equipment", (string)null);
+                    b.ToTable("Equipment");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.FitnessGoal", b =>
@@ -135,7 +138,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FitnessGoals", (string)null);
+                    b.ToTable("FitnessGoals");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Membership", b =>
@@ -215,7 +218,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Memberships", (string)null);
+                    b.ToTable("Memberships");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.MembershipPlan", b =>
@@ -246,7 +249,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MembershipPlans", (string)null);
+                    b.ToTable("MembershipPlans");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Payment", b =>
@@ -293,7 +296,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("MembershipId");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.ProgressLog", b =>
@@ -321,7 +324,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("FitnessGoalId");
 
-                    b.ToTable("ProgressLogs", (string)null);
+                    b.ToTable("ProgressLogs");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Session", b =>
@@ -366,7 +369,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("Sessions", (string)null);
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.SessionBooking", b =>
@@ -395,7 +398,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SessionBookings", (string)null);
+                    b.ToTable("SessionBookings");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.TrainerRequest", b =>
@@ -433,7 +436,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("TrainerUserId");
 
-                    b.ToTable("TrainerRequests", (string)null);
+                    b.ToTable("TrainerRequests");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.TrainerSession", b =>
@@ -469,7 +472,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("TrainerUserId");
 
-                    b.ToTable("TrainerSessions", (string)null);
+                    b.ToTable("TrainerSessions");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.User", b =>
@@ -534,7 +537,7 @@ namespace LoginFormASPCore6.Migrations
                     b.HasIndex("StudentNumber")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Venue", b =>
@@ -562,7 +565,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Venues", (string)null);
+                    b.ToTable("Venues");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.WorkoutPlan", b =>
@@ -602,7 +605,7 @@ namespace LoginFormASPCore6.Migrations
 
                     b.HasIndex("TrainerUserId");
 
-                    b.ToTable("WorkoutPlans", (string)null);
+                    b.ToTable("WorkoutPlans");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.CheckIn", b =>

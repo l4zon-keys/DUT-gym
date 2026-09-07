@@ -109,5 +109,79 @@ namespace Testing
 
             Assert.Equal("Amy", ranked[0].EmpName);
         }
+
+        [Fact]
+        public void CountDistinctDaysInWeek_NoVisits_ReturnsZero()
+        {
+            var days = AttendanceStreakService.CountDistinctDaysInWeek(new List<DateTime>(), new DateTime(2026, 3, 18));
+            Assert.Equal(0, days);
+        }
+
+        [Fact]
+        public void CountDistinctDaysInWeek_CountsDistinctDatesWithinMondayToSunday()
+        {
+            // 2026-03-18 is a Wednesday; that week runs Mon 2026-03-16 to Sun 2026-03-22.
+            var visits = new List<DateTime>
+            {
+                new(2026, 3, 16, 8, 0, 0),
+                new(2026, 3, 16, 18, 0, 0), // same day, twice - should not double count
+                new(2026, 3, 18, 9, 0, 0),
+                new(2026, 3, 23, 9, 0, 0), // next week - excluded
+                new(2026, 3, 9, 9, 0, 0),  // previous week - excluded
+            };
+
+            var days = AttendanceStreakService.CountDistinctDaysInWeek(visits, new DateTime(2026, 3, 18));
+
+            Assert.Equal(2, days);
+        }
+
+        [Fact]
+        public void CalculateAverageVisitMinutes_IgnoresOpenCheckIns()
+        {
+            var visits = new List<(DateTime In, DateTime? Out)>
+            {
+                (new DateTime(2026, 3, 1, 8, 0, 0), new DateTime(2026, 3, 1, 9, 0, 0)),  // 60 min
+                (new DateTime(2026, 3, 2, 8, 0, 0), new DateTime(2026, 3, 2, 8, 30, 0)), // 30 min
+                (new DateTime(2026, 3, 3, 8, 0, 0), null),                               // still open - excluded
+            };
+
+            var average = AttendanceStreakService.CalculateAverageVisitMinutes(visits);
+
+            Assert.Equal(45, average);
+        }
+
+        [Fact]
+        public void CalculateAverageVisitMinutes_NoCompletedVisits_ReturnsZero()
+        {
+            var visits = new List<(DateTime In, DateTime? Out)> { (DateTime.UtcNow, null) };
+            Assert.Equal(0, AttendanceStreakService.CalculateAverageVisitMinutes(visits));
+        }
+
+        [Fact]
+        public void CalculateTodayMinutes_OpenCheckIn_UsesNowAsEndpoint()
+        {
+            var checkInTime = new DateTime(2026, 3, 1, 8, 0, 0);
+            var now = new DateTime(2026, 3, 1, 8, 45, 0);
+            var visits = new List<(DateTime In, DateTime? Out)> { (checkInTime, null) };
+
+            var minutes = AttendanceStreakService.CalculateTodayMinutes(visits, now);
+
+            Assert.Equal(45, minutes);
+        }
+
+        [Fact]
+        public void CalculateTodayMinutes_MultipleVisits_SumsThem()
+        {
+            var now = new DateTime(2026, 3, 1, 20, 0, 0);
+            var visits = new List<(DateTime In, DateTime? Out)>
+            {
+                (new DateTime(2026, 3, 1, 6, 0, 0), new DateTime(2026, 3, 1, 6, 30, 0)),
+                (new DateTime(2026, 3, 1, 18, 0, 0), null),
+            };
+
+            var minutes = AttendanceStreakService.CalculateTodayMinutes(visits, now);
+
+            Assert.Equal(150, minutes);
+        }
     }
 }

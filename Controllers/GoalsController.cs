@@ -30,6 +30,9 @@ namespace LoginFormASPCore6.Controllers
             ViewBag.Streak = await streakService.GetMonthlyStreakAsync(student!.Id);
             ViewBag.VisitsThisMonth = await streakService.GetVisitCountForMonthAsync(student.Id, DateTime.UtcNow);
             ViewBag.CertificateEligible = AttendanceStreakService.IsEligibleForCertificate((int)ViewBag.VisitsThisMonth);
+            ViewBag.DaysThisWeek = await streakService.GetDaysAttendedThisWeekAsync(student.Id);
+            ViewBag.AverageVisitMinutes = await streakService.GetAverageVisitMinutesAsync(student.Id);
+            ViewBag.TodayMinutes = await streakService.GetTodayMinutesAsync(student.Id);
 
             return View(goal);
         }
@@ -73,6 +76,21 @@ namespace LoginFormASPCore6.Controllers
             var goal = await Db.FitnessGoals.FirstOrDefaultAsync(g => g.Id == goalId && g.UserId == student!.Id);
             if (goal == null) return NotFound();
 
+            if (!ProgressLogRules.IsValidWeight(weightKg))
+            {
+                TempData["Error"] = "Enter a weight between 20 and 300 kg.";
+                return RedirectToAction(nameof(MyGoal));
+            }
+
+            var today = DateTime.UtcNow.Date;
+            var checkedInToday = await Db.CheckIns.AnyAsync(c =>
+                c.UserId == student!.Id && c.CheckInTime >= today && c.CheckInTime < today.AddDays(1));
+            if (!checkedInToday)
+            {
+                TempData["Error"] = "Check in at the gym today before logging progress.";
+                return RedirectToAction(nameof(MyGoal));
+            }
+
             Db.ProgressLogs.Add(new ProgressLog
             {
                 FitnessGoalId = goalId,
@@ -81,7 +99,7 @@ namespace LoginFormASPCore6.Controllers
             });
             await Db.SaveChangesAsync();
 
-            TempData["Success"] = "Progress logged.";
+            TempData["Success"] = ProgressLogRules.BuildProgressMessage(goal.GoalType, weightKg!.Value, goal.TargetWeightKg);
             return RedirectToAction(nameof(MyGoal));
         }
 

@@ -35,5 +35,15 @@ namespace LoginFormASPCore6.Models
 
         [StringLength(300)]
         public string? Notes { get; set; }
+
+        [StringLength(40)]
+        [DisplayName("Category")]
+        public string? Category { get; set; }
+
+        [DisplayName("Instructor")]
+        public int? InstructorUserId { get; set; }
+
+        [ForeignKey(nameof(InstructorUserId))]
+        public User? Instructor { get; set; }
     }
 }

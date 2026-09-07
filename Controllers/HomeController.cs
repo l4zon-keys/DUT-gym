@@ -14,12 +14,14 @@ namespace LoginFormASPCore6.Controllers
     {
         private readonly MyDbContext context;
         private readonly GymCapacityService capacityService;
+        private readonly AttendanceStreakService streakService;
         private readonly PasswordHasher<User> passwordHasher = new();
 
-        public HomeController(MyDbContext context, GymCapacityService capacityService)
+        public HomeController(MyDbContext context, GymCapacityService capacityService, AttendanceStreakService streakService)
         {
             this.context = context;
             this.capacityService = capacityService;
+            this.streakService = streakService;
         }
 
         public IActionResult Index()
@@ -214,11 +216,12 @@ namespace LoginFormASPCore6.Controllers
                 .Where(m => m.UserId == user.Id)
                 .OrderByDescending(m => m.AppliedAt)
                 .FirstOrDefaultAsync();
+            ViewBag.Streak = await streakService.GetMonthlyStreakAsync(user.Id);
 
             return View(user);
         }
 
-        public IActionResult StaffDashboard()
+        public async Task<IActionResult> StaffDashboard()
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -234,6 +237,11 @@ namespace LoginFormASPCore6.Controllers
             {
                 return View("ApprovalPending", user);
             }
+
+            var today = DateTime.UtcNow.Date;
+            ViewBag.Capacity = await capacityService.GetCurrentStatusAsync();
+            ViewBag.CheckInsToday = await context.CheckIns.CountAsync(c => c.CheckInTime >= today && c.CheckInTime < today.AddDays(1));
+            ViewBag.FaultyEquipmentCount = await context.Equipment.CountAsync(e => e.Status == EquipmentStatus.Faulty);
 
             return View(user);
         }

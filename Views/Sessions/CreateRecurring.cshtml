@@ -1,19 +1,20 @@
-@model Session
+@model LoginFormASPCore6.Controllers.RecurringSessionRequest
 
 @{
-    ViewData["Title"] = "Edit Session";
+    ViewData["Title"] = "New Recurring Class";
+    var weekdays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
 }
 
 <div class="py-4">
-    <div class="section-card mx-auto" style="max-width: 560px;">
-        <h1 class="mb-4">Edit Session</h1>
-        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
-            <input type="hidden" asp-for="Id" />
+    <div class="section-card mx-auto" style="max-width: 640px;">
+        <h1 class="mb-2">New Recurring Class</h1>
+        <p class="form-text-hint mb-4">Generates one session per selected weekday, every week, for the number of weeks chosen.</p>
+        <form asp-action="CreateRecurring" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
                 <label asp-for="Title" class="form-label"></label>
-                <input asp-for="Title" class="form-control" />
+                <input asp-for="Title" class="form-control" placeholder="e.g. Zumba" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="mb-3">
@@ -35,15 +36,28 @@
                 </select>
                 <span asp-validation-for="InstructorUserId" class="text-danger"></span>
             </div>
+
             <div class="mb-3">
-                <label asp-for="StartTime" class="form-label"></label>
-                <input asp-for="StartTime" class="form-control" />
-                <span asp-validation-for="StartTime" class="text-danger"></span>
+                <label class="form-label">Weekdays</label>
+                <div class="d-flex gap-3 flex-wrap">
+                    @foreach (var day in weekdays)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Weekdays" value="@day" id="day-@day" />
+                            <label class="form-check-label" for="day-@day">@day.ToString().Substring(0, 3)</label>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="Weekdays" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StartTime" class="form-label">Start Time (of day)</label>
+                <input type="time" name="StartTime" class="form-control" value="18:00" />
             </div>
             <div class="mb-3">
-                <label asp-for="EndTime" class="form-label"></label>
-                <input asp-for="EndTime" class="form-control" />
-                <span asp-validation-for="EndTime" class="text-danger"></span>
+                <label asp-for="EndTime" class="form-label">End Time (of day)</label>
+                <input type="time" name="EndTime" class="form-control" value="19:00" />
             </div>
             <div class="mb-3">
                 <label asp-for="Capacity" class="form-label"></label>
@@ -51,12 +65,17 @@
                 <span asp-validation-for="Capacity" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label asp-for="WeeksToGenerate" class="form-label">Weeks to Generate</label>
+                <input asp-for="WeeksToGenerate" class="form-control" />
+                <span asp-validation-for="WeeksToGenerate" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
                 <label asp-for="Notes" class="form-label"></label>
                 <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
                 <span asp-validation-for="Notes" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-gradient">Save Changes</button>
+            <button type="submit" class="btn btn-gradient">Generate Sessions</button>
             <a asp-action="Manage" class="btn btn-outline-primary">Cancel</a>
         </form>
     </div>
