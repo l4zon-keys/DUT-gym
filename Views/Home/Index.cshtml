@@ -1,22 +1,99 @@
-﻿@{
+@{
     ViewData["Title"] = "Home";
     var isAuthenticated = Context.Session.GetString("UserSession") != null;
 }
 
 <div class="hero">
-    <h1>Dut Gym e-Application</h1>
-    <p>
-        The official online portal for DUT students and staff to register,
-        sign in, and manage their gym membership access in one place.
-    </p>
+    <div class="hero-inner">
+        <h1>Train on<br />your terms.</h1>
+        <p>
+            Register with your DUT email, get your membership approved,
+            and book sessions, trainers and meals &mdash; all in one app.
+        </p>
 
-    @if (isAuthenticated)
-    {
-        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-gradient btn-lg px-5">Go to Dashboard</a>
-    }
-    else
-    {
-        <a asp-controller="Home" asp-action="Login" class="btn btn-gradient btn-lg px-5 me-2">Sign In</a>
-        <a asp-controller="Home" asp-action="Signup" class="btn btn-outline-primary btn-lg px-5">Create Account</a>
-    }
+        @if (isAuthenticated)
+        {
+            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-gradient btn-lg px-5">Go to Dashboard</a>
+        }
+        else
+        {
+            <a asp-controller="Home" asp-action="Login" class="btn btn-gradient btn-lg px-5 me-2">Sign In</a>
+            <a asp-controller="Home" asp-action="Signup" class="btn btn-outline-primary btn-lg px-5">Create Account</a>
+        }
+    </div>
 </div>
+
+<div class="py-5">
+    <div class="section-heading">
+        <span class="eyebrow">Everything in one app</span>
+        <h2>Built for the way you train</h2>
+        <p>From your first sign-up to your next PB, membership, coaching and progress stay in sync.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-card-checklist"></i></div>
+                <h5>Membership, sorted</h5>
+                <p>Apply online, upload proof of payment, and track approval status without a single queue.</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <h5>Goals &amp; progress</h5>
+                <p>Set a fitness goal, log your weight, and watch your streak and progress bar move with every visit.</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-people"></i></div>
+                <h5>Trainers &amp; classes</h5>
+                <p>Browse certified personal trainers and book group sessions and classes that fit your schedule.</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-egg-fried"></i></div>
+                <h5>Meal planning</h5>
+                <p>Get quick meal suggestions that match your goal, so nutrition stays part of the plan.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="py-4">
+    <div class="section-heading">
+        <span class="eyebrow">How it works</span>
+        <h2>Three steps to your next workout</h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-md-4">
+            <div class="step-num">1</div>
+            <h5>Create your account</h5>
+            <p class="form-text-hint">Sign up with your DUT student or staff email &mdash; no paperwork required.</p>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="step-num">2</div>
+            <h5>Get approved</h5>
+            <p class="form-text-hint">Apply for a membership plan and track approval right from your dashboard.</p>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="step-num">3</div>
+            <h5>Train &amp; track</h5>
+            <p class="form-text-hint">Check in, book sessions, log progress, and chase your goal &mdash; all in the app.</p>
+        </div>
+    </div>
+</div>
+
+@if (!isAuthenticated)
+{
+    <div class="py-4 mb-4">
+        <div class="cta-band">
+            <h2>Ready to get moving?</h2>
+            <p>Create your account in minutes and get your DUT gym membership approved online.</p>
+            <a asp-controller="Home" asp-action="Signup" class="btn btn-gradient btn-lg px-5">Create Account</a>
+        </div>
+    </div>
+}
