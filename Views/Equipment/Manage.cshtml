@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Equipment";
+    var currentRole = Context.Session.GetString("UserRole");
 }
 
 <div class="py-4">
@@ -36,33 +37,47 @@
 
         <div class="section-card mb-3">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                <div>
-                    <h5 class="mb-1">@item.Name</h5>
-                    @if (!string.IsNullOrEmpty(item.Location))
+                <div class="d-flex gap-3">
+                    @if (!string.IsNullOrEmpty(item.ImagePath))
                     {
-                        <p class="form-text-hint mb-1">@item.Location</p>
+                        <img src="~/@item.ImagePath" alt="@item.Name" class="rounded" style="width: 64px; height: 64px; object-fit: cover;" />
                     }
-                    <div class="d-flex gap-2 align-items-center flex-wrap">
-                        <span class="status-badge @statusClass">@item.Status</span>
-                        @if (item.Status == EquipmentStatus.Faulty && item.Severity != null)
+                    <div>
+                        <h5 class="mb-1">@item.Name</h5>
+                        @if (!string.IsNullOrEmpty(item.Location) || !string.IsNullOrEmpty(item.Brand))
                         {
-                            <span class="status-badge severity-@item.Severity.ToString()!.ToLower()">@item.Severity Severity</span>
+                            <p class="form-text-hint mb-1">@item.Location@(!string.IsNullOrEmpty(item.Location) && !string.IsNullOrEmpty(item.Brand) ? " · " : "")@item.Brand</p>
+                        }
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <span class="status-badge @statusClass">@item.Status</span>
+                            @if (item.Status == EquipmentStatus.Faulty && item.Severity != null)
+                            {
+                                <span class="status-badge severity-@item.Severity.ToString()!.ToLower()">@item.Severity Severity</span>
+                            }
+                        </div>
+                        @if (item.Status == EquipmentStatus.Faulty)
+                        {
+                            <div class="mt-2">
+                                @if (!string.IsNullOrEmpty(item.Notes))
+                                {
+                                    <p class="mb-1">@item.Notes</p>
+                                }
+                                <p class="form-text-hint mb-1">Reported by @(item.ReportedByUser?.EmpName ?? "-") on @item.ReportedAt?.ToString("g")</p>
+                                @if (!string.IsNullOrEmpty(item.DamagePhotoPath))
+                                {
+                                    <a href="~/@item.DamagePhotoPath" target="_blank">
+                                        <img src="~/@item.DamagePhotoPath" alt="Damage photo" class="rounded" style="width: 80px; height: 80px; object-fit: cover;" />
+                                    </a>
+                                }
+                            </div>
                         }
                     </div>
-                    @if (item.Status == EquipmentStatus.Faulty)
-                    {
-                        <p class="mb-0 mt-2">
-                            @if (!string.IsNullOrEmpty(item.Notes))
-                            {
-                                <span>@item.Notes<br /></span>
-                            }
-                            <span class="form-text-hint">Reported by @(item.ReportedByUser?.EmpName ?? "-") on @item.ReportedAt?.ToString("g")</span>
-                        </p>
-                    }
                 </div>
 
                 <div class="d-flex gap-2 flex-wrap">
-                    @if (item.Status != EquipmentStatus.Faulty)
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#details-@item.Id">Asset Details</button>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    @if (item.Status != EquipmentStatus.Faulty && item.Status != EquipmentStatus.Inactive)
                     {
                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#fault-@item.Id">Report Fault</button>
                     }
@@ -84,13 +99,78 @@
                             <button type="submit" class="btn btn-sm btn-outline-primary">Mark Inactive</button>
                         </form>
                     }
+                    @if (item.Status == EquipmentStatus.Inactive)
+                    {
+                        <form asp-action="MarkActive" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Reactivate</button>
+                        </form>
+                    }
+                    @if (currentRole == "Admin" && item.Status == EquipmentStatus.Inactive)
+                    {
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete this equipment? This cannot be undone.');">Delete</button>
+                        </form>
+                    }
                 </div>
             </div>
 
-            @if (item.Status != EquipmentStatus.Faulty)
+            <div class="collapse mt-3" id="details-@item.Id">
+                <div class="border-top pt-3">
+                    @{
+                        var hasAssetInfo = !string.IsNullOrEmpty(item.Supplier) || item.PurchaseDate != null || item.PurchasePrice != null
+                            || item.WarrantyExpiryDate != null || !string.IsNullOrEmpty(item.InsuranceProvider)
+                            || !string.IsNullOrEmpty(item.InsurancePolicyNumber) || item.InsuranceExpiryDate != null;
+                    }
+                    @if (!hasAssetInfo)
+                    {
+                        <p class="text-muted mb-0">No purchase or insurance details on record yet. <a asp-action="Edit" asp-route-id="@item.Id">Add some</a>.</p>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @if (!string.IsNullOrEmpty(item.Supplier))
+                            {
+                                <div class="col-md-6 mb-1"><strong>Bought From:</strong> @item.Supplier</div>
+                            }
+                            @if (item.PurchaseDate != null)
+                            {
+                                <div class="col-md-6 mb-1"><strong>Purchase Date:</strong> @item.PurchaseDate.Value.ToString("d")</div>
+                            }
+                            @if (item.PurchasePrice != null)
+                            {
+                                <div class="col-md-6 mb-1"><strong>Purchase Price:</strong> R@(item.PurchasePrice.Value.ToString("N2"))</div>
+                            }
+                            @if (item.WarrantyExpiryDate != null)
+                            {
+                                <div class="col-md-6 mb-1">
+                                    <strong>Warranty Expiry:</strong>
+                                    <span class="@(item.WarrantyExpiryDate < DateTime.Today ? "text-danger" : "")">@item.WarrantyExpiryDate.Value.ToString("d")</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(item.InsuranceProvider))
+                            {
+                                <div class="col-md-6 mb-1"><strong>Insurance Provider:</strong> @item.InsuranceProvider</div>
+                            }
+                            @if (!string.IsNullOrEmpty(item.InsurancePolicyNumber))
+                            {
+                                <div class="col-md-6 mb-1"><strong>Policy Number:</strong> @item.InsurancePolicyNumber</div>
+                            }
+                            @if (item.InsuranceExpiryDate != null)
+                            {
+                                <div class="col-md-6 mb-1">
+                                    <strong>Insurance Expiry:</strong>
+                                    <span class="@(item.InsuranceExpiryDate < DateTime.Today ? "text-danger" : "")">@item.InsuranceExpiryDate.Value.ToString("d")</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (item.Status != EquipmentStatus.Faulty && item.Status != EquipmentStatus.Inactive)
             {
                 <div class="collapse mt-3" id="fault-@item.Id">
-                    <form asp-action="ReportFault" method="post" class="d-flex gap-2 align-items-end flex-wrap">
+                    <form asp-action="ReportFault" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-end flex-wrap">
                         <input type="hidden" name="id" value="@item.Id" />
                         <div>
                             <label class="form-label">Severity</label>
@@ -104,6 +184,10 @@
                         <div class="flex-grow-1">
                             <label class="form-label">Notes</label>
                             <input type="text" name="notes" class="form-control" placeholder="What's wrong?" />
+                        </div>
+                        <div>
+                            <label class="form-label">Damage Photo (optional)</label>
+                            <input type="file" name="damagePhotoFile" class="form-control" accept=".jpg,.jpeg,.png" />
                         </div>
                         <button type="submit" class="btn btn-sm btn-gradient">Submit</button>
                     </form>

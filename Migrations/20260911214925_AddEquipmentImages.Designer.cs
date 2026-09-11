@@ -4,6 +4,7 @@ using LoginFormASPCore6.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LoginFormASPCore6.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260911214925_AddEquipmentImages")]
+    partial class AddEquipmentImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,10 +67,6 @@ namespace LoginFormASPCore6.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Brand")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("DamagePhotoPath")
                         .HasMaxLength(260)
                         .HasColumnType("nvarchar(260)");
@@ -75,17 +74,6 @@ namespace LoginFormASPCore6.Migrations
                     b.Property<string>("ImagePath")
                         .HasMaxLength(260)
                         .HasColumnType("nvarchar(260)");
-
-                    b.Property<DateTime?>("InsuranceExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InsurancePolicyNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("InsuranceProvider")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -100,12 +88,6 @@ namespace LoginFormASPCore6.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime?>("PurchaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("PurchasePrice")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("ReportedAt")
                         .HasColumnType("datetime2");
@@ -124,13 +106,6 @@ namespace LoginFormASPCore6.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Supplier")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime?>("WarrantyExpiryDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

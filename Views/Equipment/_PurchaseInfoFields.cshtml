@@ -1,0 +1,45 @@
+@model Equipment
+
+<h5 class="mt-4 mb-3">Purchase &amp; Insurance Details <span class="form-text-hint">(optional)</span></h5>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="Brand" class="form-label"></label>
+        <input asp-for="Brand" class="form-control" placeholder="e.g. Technogym" />
+        <span asp-validation-for="Brand" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Supplier" class="form-label"></label>
+        <input asp-for="Supplier" class="form-control" placeholder="Where it was bought" />
+        <span asp-validation-for="Supplier" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="PurchaseDate" class="form-label"></label>
+        <input asp-for="PurchaseDate" class="form-control" />
+        <span asp-validation-for="PurchaseDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="PurchasePrice" class="form-label"></label>
+        <input asp-for="PurchasePrice" class="form-control" placeholder="R0.00" />
+        <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="WarrantyExpiryDate" class="form-label"></label>
+        <input asp-for="WarrantyExpiryDate" class="form-control" />
+        <span asp-validation-for="WarrantyExpiryDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="InsuranceProvider" class="form-label"></label>
+        <input asp-for="InsuranceProvider" class="form-control" />
+        <span asp-validation-for="InsuranceProvider" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="InsurancePolicyNumber" class="form-label"></label>
+        <input asp-for="InsurancePolicyNumber" class="form-control" />
+        <span asp-validation-for="InsurancePolicyNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="InsuranceExpiryDate" class="form-label"></label>
+        <input asp-for="InsuranceExpiryDate" class="form-control" />
+        <span asp-validation-for="InsuranceExpiryDate" class="text-danger"></span>
+    </div>
+</div>

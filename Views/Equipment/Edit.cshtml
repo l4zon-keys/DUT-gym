@@ -1,14 +1,22 @@
 @model Equipment
 
 @{
-    ViewData["Title"] = "Add Equipment";
+    ViewData["Title"] = "Edit Equipment";
 }
 
 <div class="py-4">
     <div class="section-card mx-auto" style="max-width: 640px;">
-        <h1 class="mb-4">Add Equipment</h1>
-        <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <h1 class="mb-4">Edit Equipment</h1>
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="Id" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <div class="mb-3">
+                    <img src="~/@Model.ImagePath" alt="@Model.Name" class="rounded" style="width: 96px; height: 96px; object-fit: cover;" />
+                </div>
+            }
 
             <div class="mb-3">
                 <label asp-for="Name" class="form-label"></label>
@@ -21,13 +29,13 @@
                 <span asp-validation-for="Location" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <label class="form-label">Equipment Photo (optional)</label>
+                <label class="form-label">Replace Equipment Photo (optional)</label>
                 <input type="file" name="equipmentPhotoFile" class="form-control" accept=".jpg,.jpeg,.png" />
             </div>
 
             @await Html.PartialAsync("_PurchaseInfoFields", Model)
 
-            <button type="submit" class="btn btn-gradient">Add Equipment</button>
+            <button type="submit" class="btn btn-gradient">Save Changes</button>
             <a asp-action="Manage" class="btn btn-outline-primary">Cancel</a>
         </form>
     </div>
