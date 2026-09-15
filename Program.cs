@@ -25,6 +25,10 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 builder.Services.AddScoped<GymCapacityService>();
 builder.Services.AddScoped<AttendanceStreakService>();
 builder.Services.AddScoped<AttendanceReportService>();
+builder.Services.AddScoped<GamificationService>();
+builder.Services.AddScoped<FriendshipService>();
+builder.Services.AddScoped<PredictiveCapacityService>();
+builder.Services.AddScoped<CapacitySlotService>();
 
 // Set Email:Provider to "Log" (default, no credentials needed) or "Smtp" (real
 // sending - fill in Email:Smtp:* first) in appsettings.json to switch.
@@ -64,6 +68,30 @@ if (app.Environment.IsDevelopment())
         };
         admin.Password = hasher.HashPassword(admin, "Admin123!");
         db.Users.Add(admin);
+        db.SaveChanges();
+    }
+
+    // Gamification catalog - reference data needed in every environment, not a
+    // dev-only convenience, so it's seeded unconditionally (idempotent) rather
+    // than gated to Development like the admin account above.
+    if (!db.Badges.Any())
+    {
+        db.Badges.AddRange(
+            new Badge { Name = "Early Bird", Description = "Checked in before 7am.", IconClass = "bi-sunrise", Code = "early_bird" },
+            new Badge { Name = "5-Day Streak", Description = "Attended 5 different days in one week.", IconClass = "bi-fire", Code = "five_day_streak" },
+            new Badge { Name = "Zumba Fanatic", Description = "Booked 5 Zumba classes.", IconClass = "bi-music-note-beamed", Code = "zumba_fanatic" }
+        );
+        db.SaveChanges();
+    }
+
+    if (!db.Rewards.Any())
+    {
+        db.Rewards.AddRange(
+            new Reward { Name = "10% Discount Code", Description = "10% off your next membership renewal.", IconClass = "bi-tag", RequiredXp = 200 },
+            new Reward { Name = "Certificate of Achievement", Description = "Recognition for consistent gym attendance.", IconClass = "bi-patch-check", RequiredXp = 400 },
+            new Reward { Name = "Free PT Session", Description = "One complimentary personal training session.", IconClass = "bi-person-check", RequiredXp = 700 },
+            new Reward { Name = "Gym Merch", Description = "A branded DUT Gym t-shirt or water bottle.", IconClass = "bi-bag-heart", RequiredXp = 1000 }
+        );
         db.SaveChanges();
     }
 }

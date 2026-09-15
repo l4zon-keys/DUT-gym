@@ -10,10 +10,16 @@ namespace LoginFormASPCore6.Controllers
     public class StaffController : AppControllerBase
     {
         private readonly GymCapacityService capacityService;
+        private readonly GamificationService gamificationService;
+        private readonly AttendanceStreakService streakService;
+        private readonly PredictiveCapacityService predictiveService;
 
-        public StaffController(MyDbContext db, GymCapacityService capacityService) : base(db)
+        public StaffController(MyDbContext db, GymCapacityService capacityService, GamificationService gamificationService, AttendanceStreakService streakService, PredictiveCapacityService predictiveService) : base(db)
         {
             this.capacityService = capacityService;
+            this.gamificationService = gamificationService;
+            this.streakService = streakService;
+            this.predictiveService = predictiveService;
         }
 
         // --- Check-in / check-out (PB-5, desk side) ------------------------
@@ -97,13 +103,16 @@ namespace LoginFormASPCore6.Controllers
             var alreadyIn = await Db.CheckIns.AnyAsync(c => c.UserId == userId && c.CheckOutTime == null);
             if (!alreadyIn)
             {
-                Db.CheckIns.Add(new CheckIn
+                var checkIn = new CheckIn
                 {
                     UserId = userId,
                     CheckedInByUserId = staff!.Id
-                });
+                };
+                Db.CheckIns.Add(checkIn);
                 await Db.SaveChangesAsync();
                 TempData["Success"] = "Student checked in.";
+
+                await AwardCheckInGamificationAsync(userId, checkIn);
             }
 
             return RedirectToAction(nameof(CheckInDetail), new { userId });
@@ -136,7 +145,34 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var status = await capacityService.GetCurrentStatusAsync();
+            ViewBag.BestTimeToGo = await predictiveService.GetBestTimeToGoTodayAsync();
             return View(status);
+        }
+
+        // --- Gamification hook (PB-17) --------------------------------------
+
+        private async Task AwardCheckInGamificationAsync(int userId, CheckIn checkIn)
+        {
+            await gamificationService.AwardXpAsync(userId, gamificationService.CheckInPoints, XpReason.CheckIn, checkIn.Id);
+
+            if (GamificationService.IsEligibleForEarlyBird(checkIn.CheckInTime, gamificationService.EarlyBirdCutoffHour))
+            {
+                await gamificationService.AwardBadgeIfEligibleAsync(userId, "early_bird");
+            }
+
+            var daysThisWeek = await streakService.GetDaysAttendedThisWeekAsync(userId);
+            if (GamificationService.IsEligibleForFiveDayStreak(daysThisWeek, gamificationService.FiveDayStreakDays))
+            {
+                // Idempotency key: one streak-milestone award per ISO week.
+                var weekKey = DateTime.UtcNow.Year * 100 + System.Globalization.ISOWeek.GetWeekOfYear(DateTime.UtcNow);
+                var awarded = await gamificationService.AwardXpAsync(userId, gamificationService.StreakMilestonePoints, XpReason.StreakMilestone, weekKey);
+                if (awarded)
+                {
+                    await gamificationService.AwardBadgeIfEligibleAsync(userId, "five_day_streak");
+                }
+            }
+
+            await gamificationService.EvaluateAndAwardRewardsAsync(userId);
         }
     }
 }

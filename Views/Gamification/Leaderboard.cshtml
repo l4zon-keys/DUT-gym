@@ -1,0 +1,40 @@
+@model List<LoginFormASPCore6.Services.GamificationLeaderboardEntry>
+
+@{
+    ViewData["Title"] = "XP Leaderboard";
+    var period = (string)ViewBag.Period;
+}
+
+<div class="py-4">
+    <h1 class="mb-1">XP Leaderboard</h1>
+    <p class="form-text-hint mb-4">Ranked by total XP earned.</p>
+
+    <div class="btn-group mb-4">
+        <a asp-action="Leaderboard" asp-route-period="weekly" class="btn btn-sm @(period == "weekly" ? "btn-gradient" : "btn-outline-primary")">Weekly</a>
+        <a asp-action="Leaderboard" asp-route-period="monthly" class="btn btn-sm @(period == "monthly" ? "btn-gradient" : "btn-outline-primary")">Monthly</a>
+        <a asp-action="Leaderboard" asp-route-period="friends" class="btn btn-sm @(period == "friends" ? "btn-gradient" : "btn-outline-primary")">Friends</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No XP recorded for this period yet.</p>
+    }
+    else
+    {
+        <div class="section-card">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>#</th><th>Name</th><th>XP</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Count; i++)
+                    {
+                        <tr class="@(i == 0 ? "leaderboard-first" : "")">
+                            <td>@(i + 1)</td>
+                            <td>@Model[i].EmpName</td>
+                            <td>@Model[i].TotalXp</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

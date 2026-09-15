@@ -30,6 +30,10 @@
                 </div>
             }
 
+            <div class="mb-3">
+                @await Html.PartialAsync("_XpLevelBadge", (XpLevelSummary)ViewBag.XpSummary)
+            </div>
+
             <div class="info-row">
                 <span class="info-label"><i class="bi bi-person"></i>Full Name</span>
                 <span class="info-value">@Model.EmpName</span>
@@ -76,6 +80,7 @@
                 <a asp-controller="Trainers" asp-action="MyTrainer" class="btn btn-outline-primary">My Trainer &amp; Plans</a>
                 <a asp-controller="Sessions" asp-action="Browse" class="btn btn-outline-primary">Class Schedule</a>
                 <a asp-controller="Meals" asp-action="Index" class="btn btn-outline-primary">Meal Planner</a>
+                <a asp-controller="Gamification" asp-action="Profile" class="btn btn-outline-primary">Achievements</a>
             </div>
         </div>
     </div>

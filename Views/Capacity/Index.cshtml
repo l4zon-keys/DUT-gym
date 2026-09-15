@@ -1,0 +1,58 @@
+@using LoginFormASPCore6.Services
+@{
+    ViewData["Title"] = "Live Capacity";
+    var status = ViewBag.Status as CapacityStatus;
+    var peakHours = ViewBag.PeakHours as List<BusyHourPrediction>;
+    var bestTime = ViewBag.BestTimeToGo as BestTimeToGo;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Live Capacity</h1>
+
+    <div class="section-card mb-4 text-center">
+        @if (status != null)
+        {
+            <partial name="_CapacityBadge" model="status" />
+        }
+        @if (bestTime != null)
+        {
+            <p class="mt-3 mb-0"><strong>Best time to go today:</strong> @bestTime.DisplayLabel</p>
+        }
+        <p class="form-text-hint mt-2 mb-0">Based on check-ins on this weekday over recent weeks.</p>
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+        <a asp-action="Slots" class="btn btn-gradient">Book a Slot</a>
+        <a asp-action="MySlotBookings" class="btn btn-outline-primary">My Bookings</a>
+    </div>
+
+    @if (peakHours != null && peakHours.Any(p => p.HistoricalCheckIns > 0))
+    {
+        <h5 class="mb-3">Peak Hours Today</h5>
+        <div class="section-card">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Hour</th><th>Typical Check-Ins</th><th>Level</th></tr></thead>
+                <tbody>
+                    @foreach (var hour in peakHours.Where(p => p.HistoricalCheckIns > 0))
+                    {
+                        var levelClass = hour.PredictedLevel switch
+                        {
+                            CapacityLevel.Light => "status-active",
+                            CapacityLevel.Moderate => "status-pending",
+                            _ => "status-rejected"
+                        };
+                        <tr>
+                            <td>@(hour.Hour.ToString("D2")):00</td>
+                            <td>@hour.HistoricalCheckIns</td>
+                            <td><span class="status-badge @levelClass">@hour.PredictedLevel</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Not enough historical data yet to predict today's busy hours.</p>
+    }
+</div>

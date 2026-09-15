@@ -10,10 +10,12 @@ namespace LoginFormASPCore6.Controllers
     public class GoalsController : AppControllerBase
     {
         private readonly AttendanceStreakService streakService;
+        private readonly GamificationService gamificationService;
 
-        public GoalsController(MyDbContext db, AttendanceStreakService streakService) : base(db)
+        public GoalsController(MyDbContext db, AttendanceStreakService streakService, GamificationService gamificationService) : base(db)
         {
             this.streakService = streakService;
+            this.gamificationService = gamificationService;
         }
 
         public async Task<IActionResult> MyGoal()
@@ -37,10 +39,12 @@ namespace LoginFormASPCore6.Controllers
             return View(goal);
         }
 
-        public IActionResult SetGoal()
+        public async Task<IActionResult> SetGoal()
         {
-            var (_, redirect) = RequireStudent();
+            var (student, redirect) = RequireStudent();
             if (redirect != null) return redirect;
+
+            ViewBag.IsOnboarding = !await Db.FitnessGoals.AnyAsync(g => g.UserId == student!.Id);
             return View(new FitnessGoal());
         }
 
@@ -61,6 +65,9 @@ namespace LoginFormASPCore6.Controllers
             model.CreatedAt = DateTime.UtcNow;
             Db.FitnessGoals.Add(model);
             await Db.SaveChangesAsync();
+
+            await gamificationService.AwardXpAsync(student.Id, gamificationService.GoalSetPoints, XpReason.GoalSet, model.Id);
+            await gamificationService.EvaluateAndAwardRewardsAsync(student.Id);
 
             TempData["Success"] = "Goal set.";
             return RedirectToAction(nameof(MyGoal));
@@ -91,13 +98,17 @@ namespace LoginFormASPCore6.Controllers
                 return RedirectToAction(nameof(MyGoal));
             }
 
-            Db.ProgressLogs.Add(new ProgressLog
+            var progressLog = new ProgressLog
             {
                 FitnessGoalId = goalId,
                 WeightKg = weightKg,
                 Notes = notes
-            });
+            };
+            Db.ProgressLogs.Add(progressLog);
             await Db.SaveChangesAsync();
+
+            await gamificationService.AwardXpAsync(student!.Id, gamificationService.ProgressLoggedPoints, XpReason.ProgressLogged, progressLog.Id);
+            await gamificationService.EvaluateAndAwardRewardsAsync(student.Id);
 
             TempData["Success"] = ProgressLogRules.BuildProgressMessage(goal.GoalType, weightKg!.Value, goal.TargetWeightKg);
             return RedirectToAction(nameof(MyGoal));

@@ -1,4 +1,5 @@
 using LoginFormASPCore6.Models;
+using LoginFormASPCore6.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +9,11 @@ namespace LoginFormASPCore6.Controllers
     // Admin-only CRUD for the session catalogue (PB-16), plus student browse/book (PB-15).
     public class SessionsController : AppControllerBase
     {
-        public SessionsController(MyDbContext db) : base(db)
+        private readonly GamificationService gamificationService;
+
+        public SessionsController(MyDbContext db, GamificationService gamificationService) : base(db)
         {
+            this.gamificationService = gamificationService;
         }
 
         // Pure - testable without a DB.
@@ -64,8 +68,25 @@ namespace LoginFormASPCore6.Controllers
                 return RedirectToAction(nameof(Browse));
             }
 
-            Db.SessionBookings.Add(new SessionBooking { SessionId = sessionId, UserId = student!.Id });
+            var booking = new SessionBooking { SessionId = sessionId, UserId = student!.Id };
+            Db.SessionBookings.Add(booking);
             await Db.SaveChangesAsync();
+
+            await gamificationService.AwardXpAsync(student.Id, gamificationService.ClassBookedPoints, XpReason.ClassBooked, booking.Id);
+
+            if (string.Equals(session.Category, "Zumba", StringComparison.OrdinalIgnoreCase))
+            {
+                var zumbaBookingCount = await Db.SessionBookings
+                    .Include(b => b.Session)
+                    .CountAsync(b => b.UserId == student.Id && !b.Cancelled && b.Session!.Category == session.Category);
+
+                if (GamificationService.IsEligibleForZumbaFanatic(zumbaBookingCount, gamificationService.ZumbaFanaticBookingCount))
+                {
+                    await gamificationService.AwardBadgeIfEligibleAsync(student.Id, "zumba_fanatic");
+                }
+            }
+
+            await gamificationService.EvaluateAndAwardRewardsAsync(student.Id);
 
             TempData["Success"] = "Session booked.";
             return RedirectToAction(nameof(MyBookings));

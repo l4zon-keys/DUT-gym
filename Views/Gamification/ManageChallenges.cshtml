@@ -1,0 +1,50 @@
+@model List<LoginFormASPCore6.Models.Challenge>
+
+@{
+    ViewData["Title"] = "Manage Challenges";
+}
+
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Challenges</h1>
+        <a asp-action="CreateChallenge" class="btn btn-gradient">New Challenge</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="section-card">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Metric</th>
+                    <th>Target</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var challenge in Model)
+                {
+                    <tr>
+                        <td>@challenge.Title</td>
+                        <td>@challenge.Metric</td>
+                        <td>@challenge.TargetValue</td>
+                        <td>@challenge.StartDate.ToString("d")</td>
+                        <td>@challenge.EndDate.ToString("d")</td>
+                        <td class="text-end">
+                            <a asp-action="EditChallenge" asp-route-id="@challenge.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="DeleteChallenge" asp-route-id="@challenge.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

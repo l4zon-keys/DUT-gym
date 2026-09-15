@@ -15,13 +15,15 @@ namespace LoginFormASPCore6.Controllers
         private readonly MyDbContext context;
         private readonly GymCapacityService capacityService;
         private readonly AttendanceStreakService streakService;
+        private readonly GamificationService gamificationService;
         private readonly PasswordHasher<User> passwordHasher = new();
 
-        public HomeController(MyDbContext context, GymCapacityService capacityService, AttendanceStreakService streakService)
+        public HomeController(MyDbContext context, GymCapacityService capacityService, AttendanceStreakService streakService, GamificationService gamificationService)
         {
             this.context = context;
             this.capacityService = capacityService;
             this.streakService = streakService;
+            this.gamificationService = gamificationService;
         }
 
         public IActionResult Index()
@@ -48,11 +50,8 @@ namespace LoginFormASPCore6.Controllers
 
             if (verified)
             {
-                HttpContext.Session.SetString("UserSession", myUser!.EmpName);
-                HttpContext.Session.SetString("UserEmail", myUser.Email);
-                HttpContext.Session.SetString("UserRole", myUser.Role);
-
-                return RedirectToRoleDashboard(myUser.Role);
+                SignInUser(myUser!);
+                return RedirectToRoleDashboard(myUser!.Role);
             }
             else
             {
@@ -107,10 +106,17 @@ namespace LoginFormASPCore6.Controllers
                 u.Password = passwordHasher.HashPassword(u, u.Password);
                 await context.Users.AddAsync(u);
                 await context.SaveChangesAsync();
-                TempData["Success"] = u.Role == EmailRoleHelper.StaffRole
-                    ? "Account created. An admin must approve it before you can access the staff dashboard."
-                    : "Account created successfully. Please sign in.";
-                return RedirectToAction("Login");
+
+                if (u.Role == EmailRoleHelper.StaffRole)
+                {
+                    TempData["Success"] = "Account created. An admin must approve it before you can access the staff dashboard.";
+                    return RedirectToAction("Login");
+                }
+
+                // Students skip the login screen and go straight into onboarding.
+                TempData["Success"] = "Account created successfully. Let's set your first goal.";
+                SignInUser(u);
+                return RedirectToAction("SetGoal", "Goals");
             }
 
             u.Password = string.Empty; // never repopulate the password field on redisplay
@@ -217,6 +223,7 @@ namespace LoginFormASPCore6.Controllers
                 .OrderByDescending(m => m.AppliedAt)
                 .FirstOrDefaultAsync();
             ViewBag.Streak = await streakService.GetMonthlyStreakAsync(user.Id);
+            ViewBag.XpSummary = await gamificationService.GetXpLevelSummaryAsync(user.Id);
 
             return View(user);
         }
@@ -283,6 +290,13 @@ namespace LoginFormASPCore6.Controllers
         }
 
         // --- Helpers ---------------------------------------------------
+
+        private void SignInUser(User user)
+        {
+            HttpContext.Session.SetString("UserSession", user.EmpName);
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetString("UserRole", user.Role);
+        }
 
         private User? GetCurrentUser()
         {

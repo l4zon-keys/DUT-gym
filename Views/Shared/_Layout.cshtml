@@ -64,6 +64,8 @@
                                         <li><a class="dropdown-item" asp-controller="Venues" asp-action="Manage">Manage Venues</a></li>
                                         <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Manage">Manage Sessions</a></li>
                                         <li><a class="dropdown-item" asp-controller="Equipment" asp-action="Manage">Manage Equipment</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="ManageChallenges">Manage Challenges</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="ManageSlots">Manage Capacity Slots</a></li>
                                     </ul>
                                 </li>
                             }
@@ -74,9 +76,16 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" asp-controller="Trainers" asp-action="Browse">Trainers</a></li>
                                         <li><a class="dropdown-item" asp-controller="Goals" asp-action="MyGoal">My Goals</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="Leaderboard">Leaderboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="Leaderboard">Attendance Leaderboard</a></li>
                                         <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Browse">Book a Session</a></li>
                                         <li><a class="dropdown-item" asp-controller="Meals" asp-action="Index">Meal Planner</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="Index">Live Capacity</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="Slots">Book a Slot</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Profile">Achievements</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Challenges">Challenges</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Friends">Friends</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Leaderboard">XP Leaderboard</a></li>
                                     </ul>
                                 </li>
                             }

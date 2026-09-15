@@ -4,6 +4,7 @@ using LoginFormASPCore6.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LoginFormASPCore6.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915093333_AddGamification")]
+    partial class AddGamification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,69 +58,6 @@ namespace LoginFormASPCore6.Migrations
                         .IsUnique();
 
                     b.ToTable("Badges");
-                });
-
-            modelBuilder.Entity("LoginFormASPCore6.Models.CapacitySlot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CapacitySlots");
-                });
-
-            modelBuilder.Entity("LoginFormASPCore6.Models.CapacitySlotBooking", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("BookedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CapacitySlotId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("NotifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("WaitlistPosition")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CapacitySlotId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CapacitySlotBookings");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Challenge", b =>
@@ -967,25 +907,6 @@ namespace LoginFormASPCore6.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("XpEvents");
-                });
-
-            modelBuilder.Entity("LoginFormASPCore6.Models.CapacitySlotBooking", b =>
-                {
-                    b.HasOne("LoginFormASPCore6.Models.CapacitySlot", "CapacitySlot")
-                        .WithMany()
-                        .HasForeignKey("CapacitySlotId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LoginFormASPCore6.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CapacitySlot");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LoginFormASPCore6.Models.Challenge", b =>

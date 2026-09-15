@@ -1,6 +1,7 @@
 using LoginFormASPCore6.Models;
 using LoginFormASPCore6.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LoginFormASPCore6.Controllers
 {
@@ -12,28 +13,52 @@ namespace LoginFormASPCore6.Controllers
         {
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var (_, redirect) = RequireAnyUser();
+            var (user, redirect) = RequireAnyUser();
             if (redirect != null) return redirect;
 
             ViewBag.WeeklyMenu = MealSuggestionService.GetWeeklyMenu();
+            await PopulateNutritionAsync(user!);
             return View(new List<MealMatch>());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Suggest(string? ingredients)
+        public async Task<IActionResult> Suggest(string? ingredients)
         {
-            var (_, redirect) = RequireAnyUser();
+            var (user, redirect) = RequireAnyUser();
             if (redirect != null) return redirect;
 
             var list = (ingredients ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             ViewBag.WeeklyMenu = MealSuggestionService.GetWeeklyMenu();
             ViewBag.Ingredients = ingredients;
+            await PopulateNutritionAsync(user!);
 
             var matches = MealSuggestionService.SuggestMeals(list);
             return View("Index", matches);
+        }
+
+        // Personal calorie/macro estimate + goal-tailored tips (PB-18). Degrades
+        // gracefully to generic tips and no estimate if the student hasn't set a
+        // fitness goal yet.
+        private async Task PopulateNutritionAsync(User user)
+        {
+            var goal = await Db.FitnessGoals
+                .Where(g => g.UserId == user.Id)
+                .OrderByDescending(g => g.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (goal?.StartingWeightKg != null)
+            {
+                ViewBag.CalorieEstimate = NutritionService.BuildEstimate(
+                    goal.StartingWeightKg.Value, user.Gender, goal.GoalType, goal.ActivityLevel);
+                ViewBag.Tips = NutritionService.GetTipsForGoal(goal.GoalType);
+            }
+            else
+            {
+                ViewBag.Tips = NutritionService.GetTipsForGoal(null);
+            }
         }
     }
 }

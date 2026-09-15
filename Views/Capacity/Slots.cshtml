@@ -1,0 +1,61 @@
+@model List<LoginFormASPCore6.Models.CapacitySlot>
+
+@{
+    ViewData["Title"] = "Book a Slot";
+    var bookedCounts = ViewBag.BookedCounts as Dictionary<int, int>;
+    var waitlistCounts = ViewBag.WaitlistCounts as Dictionary<int, int>;
+    var mySlotIds = ViewBag.MySlotIds as HashSet<int>;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Book a Slot</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <p class="mb-4"><a asp-action="MySlotBookings">View My Bookings</a></p>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No upcoming slots scheduled.</p>
+    }
+
+    @foreach (var slot in Model)
+    {
+        var booked = bookedCounts != null && bookedCounts.TryGetValue(slot.Id, out var bc) ? bc : 0;
+        var waitlisted = waitlistCounts != null && waitlistCounts.TryGetValue(slot.Id, out var wc) ? wc : 0;
+        var full = booked >= slot.Capacity;
+        var alreadyIn = mySlotIds != null && mySlotIds.Contains(slot.Id);
+
+        <div class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">@slot.StartTime.ToString("f")</h5>
+                    <p class="form-text-hint mb-1">@slot.StartTime.ToString("t") to @slot.EndTime.ToString("t")</p>
+                    <p class="mb-0">@booked / @slot.Capacity booked@(waitlisted > 0 ? $" - {waitlisted} waitlisted" : "")</p>
+                    @if (!string.IsNullOrEmpty(slot.Notes))
+                    {
+                        <p class="form-text-hint mb-0">@slot.Notes</p>
+                    }
+                </div>
+                @if (alreadyIn)
+                {
+                    <span class="status-badge status-active">Booked</span>
+                }
+                else
+                {
+                    <form asp-action="BookSlot" method="post">
+                        <input type="hidden" name="slotId" value="@slot.Id" />
+                        <button type="submit" class="btn btn-gradient">@(full ? "Join Waitlist" : "Book")</button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+</div>

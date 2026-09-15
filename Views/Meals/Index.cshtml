@@ -5,11 +5,49 @@
     ViewData["Title"] = "Meal Planner";
     var weeklyMenu = ViewBag.WeeklyMenu as List<MenuDay>;
     var ingredients = ViewBag.Ingredients as string;
+    var calorieEstimate = ViewBag.CalorieEstimate as DailyCalorieEstimate;
+    var tips = ViewBag.Tips as List<string>;
 }
 
 <div class="py-4">
     <h1 class="mb-1"><i class="bi bi-egg-fried"></i> Meal Planner</h1>
     <p class="form-text-hint mb-4">Tell us what you have in the cupboard, and we'll suggest affordable meals you can make.</p>
+
+    @if (calorieEstimate != null)
+    {
+        <div class="section-card mb-4">
+            <h5 class="mb-3">Your Daily Target</h5>
+            <div class="info-row">
+                <span class="info-label">Calories</span>
+                <span class="info-value">~@calorieEstimate.TargetCalories kcal</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Protein / Carbs / Fat</span>
+                <span class="info-value">@(calorieEstimate.ProteinG)g / @(calorieEstimate.CarbsG)g / @(calorieEstimate.FatG)g</span>
+            </div>
+            <p class="form-text-hint mb-0 mt-2">Estimated from your fitness goal and starting weight - a rough guide, not medical advice.</p>
+        </div>
+    }
+    else
+    {
+        <div class="section-card mb-4">
+            <p class="mb-2">Set a fitness goal to get a personalised daily calorie and macro estimate.</p>
+            <a asp-controller="Goals" asp-action="SetGoal" class="btn btn-outline-primary btn-sm">Set a Goal</a>
+        </div>
+    }
+
+    @if (tips != null && tips.Any())
+    {
+        <div class="section-card mb-4">
+            <h5 class="mb-3">Healthy Eating Tips</h5>
+            <ul class="mb-0">
+                @foreach (var tip in tips)
+                {
+                    <li>@tip</li>
+                }
+            </ul>
+        </div>
+    }
 
     <div class="section-card mb-4">
         <form asp-action="Suggest" method="post" class="d-flex gap-2 align-items-end flex-wrap">
@@ -32,6 +70,7 @@
                     <span class="status-badge status-active">@($"~R{match.Recipe.EstimatedCostRand}")</span>
                 </div>
                 <p class="mb-1 form-text-hint">Ingredients: @string.Join(", ", match.Recipe.Ingredients)</p>
+                <p class="mb-1 form-text-hint">@match.Recipe.CaloriesKcal kcal &middot; @(match.Recipe.ProteinG)g protein &middot; @(match.Recipe.CarbsG)g carbs &middot; @(match.Recipe.FatG)g fat</p>
                 <p class="mb-0">@match.Recipe.Instructions</p>
             </div>
         }
@@ -46,7 +85,7 @@
         <h5 class="mt-4 mb-3">This Week's Meal-Prep Menu</h5>
         <div class="section-card">
             <table class="table table-sm mb-0">
-                <thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th></tr></thead>
+                <thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th><th>Total kcal</th></tr></thead>
                 <tbody>
                     @foreach (var day in weeklyMenu)
                     {
@@ -55,6 +94,7 @@
                             <td>@day.Breakfast.Name</td>
                             <td>@day.Lunch.Name</td>
                             <td>@day.Dinner.Name</td>
+                            <td>@(day.Breakfast.CaloriesKcal + day.Lunch.CaloriesKcal + day.Dinner.CaloriesKcal)</td>
                         </tr>
                     }
                 </tbody>

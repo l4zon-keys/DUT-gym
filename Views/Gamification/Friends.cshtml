@@ -1,0 +1,67 @@
+@using LoginFormASPCore6.Models
+@{
+    ViewData["Title"] = "Friends";
+    var friends = (List<Friendship>)ViewBag.Friends;
+    var pending = (List<Friendship>)ViewBag.PendingRequests;
+    var meId = (int)ViewBag.CurrentUserId;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Friends</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Add a Friend</h5>
+        <form asp-action="SendFriendRequest" method="post" class="d-flex gap-2">
+            <input type="text" name="identifier" class="form-control" placeholder="Student email or number" required />
+            <button type="submit" class="btn btn-gradient">Send Request</button>
+        </form>
+    </div>
+
+    @if (pending.Any())
+    {
+        <div class="section-card mb-4">
+            <h5 class="mb-3">Pending Requests</h5>
+            @foreach (var request in pending)
+            {
+                <div class="info-row">
+                    <span class="info-label">@request.User!.EmpName</span>
+                    <form asp-action="AcceptFriendRequest" method="post">
+                        <input type="hidden" name="requestId" value="@request.Id" />
+                        <button type="submit" class="btn btn-sm btn-gradient">Accept</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="section-card">
+        <h5 class="mb-3">My Friends</h5>
+        @if (!friends.Any())
+        {
+            <p class="text-muted mb-0">No friends yet - send a request above to start comparing XP.</p>
+        }
+        else
+        {
+            @foreach (var friendship in friends)
+            {
+                var other = friendship.UserId == meId ? friendship.FriendUser : friendship.User;
+                <div class="info-row">
+                    <span class="info-label">@other!.EmpName</span>
+                    <form asp-action="RemoveFriend" method="post">
+                        <input type="hidden" name="friendshipId" value="@friendship.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Remove</button>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+</div>

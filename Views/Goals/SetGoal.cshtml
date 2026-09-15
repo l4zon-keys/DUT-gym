@@ -6,7 +6,15 @@
 
 <div class="py-4">
     <div class="section-card mx-auto" style="max-width: 560px;">
-        <h1 class="mb-4">Set a Fitness Goal</h1>
+        @if (ViewBag.IsOnboarding == true)
+        {
+            <h1 class="mb-1">Welcome! What's your goal?</h1>
+            <p class="text-muted mb-4">Tell us what you're working towards so we can tailor your experience.</p>
+        }
+        else
+        {
+            <h1 class="mb-4">Set a Fitness Goal</h1>
+        }
 
         <form asp-action="SetGoal" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -14,8 +22,10 @@
             <div class="mb-3">
                 <label asp-for="GoalType" class="form-label"></label>
                 <select asp-for="GoalType" class="form-control">
-                    <option value="WeightLoss">Weight Loss</option>
-                    <option value="MuscleGain">Muscle Gain</option>
+                    <option value="WeightLoss">Lose Weight</option>
+                    <option value="MuscleGain">Build Muscle</option>
+                    <option value="Tone">Tone</option>
+                    <option value="Endurance">Endurance</option>
                     <option value="GeneralFitness">General Fitness</option>
                 </select>
             </div>

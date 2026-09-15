@@ -1,0 +1,74 @@
+@model List<LoginFormASPCore6.Models.Challenge>
+@using LoginFormASPCore6.Models
+
+@{
+    ViewData["Title"] = "Challenges";
+    var participation = (Dictionary<int, ChallengeParticipant>)ViewBag.MyParticipation;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">Challenges</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No active challenges right now.</p>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var challenge in Model)
+            {
+                var joined = participation.TryGetValue(challenge.Id, out var p);
+                <div class="section-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">@challenge.Title</h5>
+                            <p class="form-text-hint mb-1">@challenge.Description</p>
+                            <p class="mb-0">Target: @challenge.TargetValue @challenge.Metric &middot; Ends @challenge.EndDate.ToString("d")</p>
+                        </div>
+                        @if (joined && p!.Completed)
+                        {
+                            <span class="status-badge status-active">Completed</span>
+                        }
+                    </div>
+
+                    @if (!joined)
+                    {
+                        <form asp-action="JoinChallenge" method="post" class="mt-3">
+                            <input type="hidden" name="challengeId" value="@challenge.Id" />
+                            <button type="submit" class="btn btn-gradient">Join Challenge</button>
+                        </form>
+                    }
+                    else if (!p!.Completed)
+                    {
+                        <div class="progress-track mt-3" style="max-width:320px;">
+                            <div class="progress-fill" style="width:@((int)Math.Clamp(p.CurrentValue * 100 / challenge.TargetValue, 0, 100))%"></div>
+                        </div>
+                        <p class="form-text-hint mb-2">@p.CurrentValue / @challenge.TargetValue @challenge.Metric</p>
+                        <form asp-action="LogChallengeProgress" method="post" class="d-flex gap-2 align-items-end">
+                            <input type="hidden" name="challengeId" value="@challenge.Id" />
+                            <div>
+                                <label class="form-label">Update progress</label>
+                                <input type="number" step="0.1" name="value" class="form-control" value="@p.CurrentValue" required />
+                            </div>
+                            <button type="submit" class="btn btn-gradient">Log Progress</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="mb-0">Final: @p.CurrentValue / @challenge.TargetValue @challenge.Metric</p>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

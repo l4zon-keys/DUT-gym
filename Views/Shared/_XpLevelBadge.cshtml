@@ -1,0 +1,24 @@
+@model LoginFormASPCore6.Services.XpLevelSummary
+
+@{
+    var levelClass = Model.Level switch
+    {
+        LoginFormASPCore6.Services.GamificationLevel.BeastMode => "status-active",
+        LoginFormASPCore6.Services.GamificationLevel.Regular => "status-pending",
+        _ => "status-rejected"
+    };
+    var nextThreshold = Model.Level == LoginFormASPCore6.Services.GamificationLevel.Beginner
+        ? Model.RegularLevelThreshold
+        : Model.Level == LoginFormASPCore6.Services.GamificationLevel.Regular
+            ? Model.BeastModeLevelThreshold
+            : (int?)null;
+    var pct = nextThreshold == null ? 100 : (int)System.Math.Clamp(Model.TotalXp * 100.0 / nextThreshold.Value, 0, 100);
+}
+
+<div class="d-flex align-items-center gap-2 flex-wrap">
+    <span class="status-badge @levelClass">@Model.Level.ToString()</span>
+    <span class="form-text-hint">@Model.TotalXp XP@(nextThreshold != null ? $" - {nextThreshold - Model.TotalXp} to next level" : " - max level")</span>
+</div>
+<div class="progress-track mt-2" style="max-width: 320px;">
+    <div class="progress-fill" style="width:@(pct)%"></div>
+</div>

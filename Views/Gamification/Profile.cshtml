@@ -1,0 +1,62 @@
+@model LoginFormASPCore6.Models.User
+@using LoginFormASPCore6.Models
+@using LoginFormASPCore6.Services
+
+@{
+    ViewData["Title"] = "My Achievements";
+    var badges = (List<UserBadge>)ViewBag.Badges;
+    var rewards = (List<UserReward>)ViewBag.Rewards;
+    var xpSummary = (XpLevelSummary)ViewBag.XpSummary;
+}
+
+<div class="py-4">
+    <h1 class="mb-4">My Achievements</h1>
+
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Level &amp; XP</h5>
+        @await Html.PartialAsync("_XpLevelBadge", xpSummary)
+    </div>
+
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Badges</h5>
+        @if (!badges.Any())
+        {
+            <p class="text-muted mb-0">No badges earned yet - check in, log progress, and book classes to start earning them.</p>
+        }
+        else
+        {
+            <div class="d-flex gap-3 flex-wrap">
+                @foreach (var ub in badges)
+                {
+                    <div class="text-center" style="width: 110px;">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1" style="width:56px;height:56px;background:#fff3cd;">
+                            <i class="bi @ub.Badge!.IconClass" style="font-size:1.5rem;color:#7a5b00;"></i>
+                        </div>
+                        <div class="fw-bold" style="font-size:0.85rem;">@ub.Badge.Name</div>
+                        <div class="form-text-hint" style="font-size:0.7rem;">@ub.EarnedAt.ToString("d")</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="section-card">
+        <h5 class="mb-3">Rewards</h5>
+        @if (!rewards.Any())
+        {
+            <p class="text-muted mb-0">Keep earning XP to unlock rewards.</p>
+        }
+        else
+        {
+            <ul class="list-unstyled mb-0">
+                @foreach (var ur in rewards)
+                {
+                    <li class="info-row">
+                        <span class="info-label"><i class="bi @ur.Reward!.IconClass me-2"></i>@ur.Reward.Name</span>
+                        <span class="info-value">@ur.EarnedAt.ToString("d")</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

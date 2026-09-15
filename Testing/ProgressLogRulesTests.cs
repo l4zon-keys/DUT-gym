@@ -58,5 +58,19 @@ namespace Testing
             var message = ProgressLogRules.BuildProgressMessage(GoalType.MuscleGain, 83, 80);
             Assert.Contains("3kg past your target", message);
         }
+
+        [Fact]
+        public void BuildProgressMessage_Tone_BelowTarget_ReturnsDistanceRemaining()
+        {
+            var message = ProgressLogRules.BuildProgressMessage(GoalType.Tone, 77, 80);
+            Assert.Contains("3kg away from your target", message);
+        }
+
+        [Fact]
+        public void BuildProgressMessage_Endurance_AboveTarget_ReturnsPastTarget()
+        {
+            var message = ProgressLogRules.BuildProgressMessage(GoalType.Endurance, 83, 80);
+            Assert.Contains("3kg past your target", message);
+        }
     }
 }

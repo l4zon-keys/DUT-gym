@@ -21,6 +21,16 @@ namespace LoginFormASPCore6.Models
     {
         WeightLoss,
         MuscleGain,
-        GeneralFitness
+        GeneralFitness,
+        Tone,
+        Endurance
+    }
+
+    public enum ActivityLevel
+    {
+        Sedentary,
+        LightlyActive,
+        ModeratelyActive,
+        VeryActive
     }
 }

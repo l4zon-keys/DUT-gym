@@ -30,6 +30,16 @@ namespace LoginFormASPCore6.Models
         public virtual DbSet<ProgressLog> ProgressLogs { get; set; } = null!;
         public virtual DbSet<SessionBooking> SessionBookings { get; set; } = null!;
         public virtual DbSet<Equipment> Equipment { get; set; } = null!;
+        public virtual DbSet<XpEvent> XpEvents { get; set; } = null!;
+        public virtual DbSet<Badge> Badges { get; set; } = null!;
+        public virtual DbSet<UserBadge> UserBadges { get; set; } = null!;
+        public virtual DbSet<Challenge> Challenges { get; set; } = null!;
+        public virtual DbSet<ChallengeParticipant> ChallengeParticipants { get; set; } = null!;
+        public virtual DbSet<Reward> Rewards { get; set; } = null!;
+        public virtual DbSet<UserReward> UserRewards { get; set; } = null!;
+        public virtual DbSet<Friendship> Friendships { get; set; } = null!;
+        public virtual DbSet<CapacitySlot> CapacitySlots { get; set; } = null!;
+        public virtual DbSet<CapacitySlotBooking> CapacitySlotBookings { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -203,6 +213,7 @@ namespace LoginFormASPCore6.Models
                 entity.Property(e => e.GoalType).HasConversion<string>().HasMaxLength(20);
                 entity.Property(e => e.StartingWeightKg).HasColumnType("decimal(5,2)");
                 entity.Property(e => e.TargetWeightKg).HasColumnType("decimal(5,2)");
+                entity.Property(e => e.ActivityLevel).HasConversion<string>().HasMaxLength(20);
 
                 entity.HasOne(e => e.User)
                     .WithMany()
@@ -241,6 +252,109 @@ namespace LoginFormASPCore6.Models
                 entity.HasOne(e => e.ReportedByUser)
                     .WithMany()
                     .HasForeignKey(e => e.ReportedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<XpEvent>(entity =>
+            {
+                entity.Property(e => e.Reason).HasConversion<string>().HasMaxLength(30);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Badge>(entity =>
+            {
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+
+            modelBuilder.Entity<UserBadge>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.BadgeId }).IsUnique();
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Badge)
+                    .WithMany()
+                    .HasForeignKey(e => e.BadgeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Challenge>(entity =>
+            {
+                entity.Property(e => e.Metric).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.TargetValue).HasColumnType("decimal(10,2)");
+
+                entity.HasOne(e => e.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ChallengeParticipant>(entity =>
+            {
+                entity.Property(e => e.CurrentValue).HasColumnType("decimal(10,2)");
+                entity.HasIndex(e => new { e.ChallengeId, e.UserId }).IsUnique();
+
+                entity.HasOne(e => e.Challenge)
+                    .WithMany()
+                    .HasForeignKey(e => e.ChallengeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<UserReward>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.RewardId }).IsUnique();
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Reward)
+                    .WithMany()
+                    .HasForeignKey(e => e.RewardId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Friendship>(entity =>
+            {
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.HasIndex(e => new { e.UserId, e.FriendUserId }).IsUnique();
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.FriendUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.FriendUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CapacitySlotBooking>(entity =>
+            {
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+
+                entity.HasOne(e => e.CapacitySlot)
+                    .WithMany()
+                    .HasForeignKey(e => e.CapacitySlotId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

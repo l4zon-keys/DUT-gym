@@ -4,7 +4,7 @@
     {
       "name": "dutgym",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--no-launch-profile", "--urls", "http://localhost:5097"],
+      "runtimeArgs": ["run", "--no-launch-profile", "--urls", "http://localhost:5097", "--", "--environment", "Development"],
       "port": 5097,
       "url": "http://localhost:5097"
     }

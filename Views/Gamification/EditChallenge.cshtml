@@ -1,0 +1,57 @@
+@model LoginFormASPCore6.Models.Challenge
+
+@{
+    ViewData["Title"] = "Edit Challenge";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto" style="max-width: 560px;">
+        <h1 class="mb-4">Edit Challenge</h1>
+        <form asp-action="EditChallenge" asp-route-id="@Model.Id" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Metric" class="form-label"></label>
+                <select asp-for="Metric" class="form-control">
+                    <option value="StepCount">Step Count</option>
+                    <option value="BenchPressKg">Bench Press (kg)</option>
+                    <option value="CheckInCount">Check-In Count</option>
+                    <option value="ClassesAttended">Classes Attended</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="TargetValue" class="form-label"></label>
+                <input asp-for="TargetValue" type="number" step="0.1" class="form-control" />
+                <span asp-validation-for="TargetValue" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="StartDate" class="form-label"></label>
+                <input asp-for="StartDate" type="date" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="EndDate" class="form-label"></label>
+                <input asp-for="EndDate" type="date" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-gradient">Save Changes</button>
+            <a asp-action="ManageChallenges" class="btn btn-outline-primary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

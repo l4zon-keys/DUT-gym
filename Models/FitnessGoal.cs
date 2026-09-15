@@ -31,6 +31,9 @@ namespace LoginFormASPCore6.Models
         [Range(20, 300)]
         public decimal? TargetWeightKg { get; set; }
 
+        [DisplayName("Activity Level")]
+        public ActivityLevel? ActivityLevel { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<ProgressLog> ProgressLogs { get; set; } = new List<ProgressLog>();

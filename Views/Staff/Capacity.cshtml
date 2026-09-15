@@ -1,7 +1,9 @@
 @model CapacityStatus
+@using LoginFormASPCore6.Services
 
 @{
     ViewData["Title"] = "Gym Capacity";
+    var bestTime = ViewBag.BestTimeToGo as BestTimeToGo;
 }
 
 <div class="py-4">
@@ -19,6 +21,13 @@
                 <span class="info-label">Capacity threshold</span>
                 <span class="info-value">@Model.Threshold</span>
             </div>
+            @if (bestTime != null)
+            {
+                <div class="info-row">
+                    <span class="info-label">Predicted quietest time today</span>
+                    <span class="info-value">@bestTime.DisplayLabel</span>
+                </div>
+            }
         </div>
 
         <a asp-action="CheckIn" class="btn btn-gradient mt-3">Go to Check-In</a>
