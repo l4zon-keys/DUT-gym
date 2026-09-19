@@ -20,6 +20,25 @@ namespace LoginFormASPCore6.Services
         public double AverageVisitMinutes { get; set; }
     }
 
+    // Admin landing-page overview (membership, revenue and campus split at a glance).
+    public class AdminOverviewStats
+    {
+        public int TotalMembers { get; set; }
+        public int NewMembersThisMonth { get; set; }
+        public int ActiveMemberships { get; set; }
+        public double ActivePercentage { get; set; }
+        public decimal RevenueThisMonth { get; set; }
+
+        // Campus name -> number of active memberships based there.
+        public Dictionary<string, int> MembersByCampus { get; set; } = new();
+
+        // Membership status -> number of memberships in that status.
+        public Dictionary<MembershipStatus, int> StatusSplit { get; set; } = new();
+
+        // "yyyy-MM" -> check-ins that month, last 6 months.
+        public Dictionary<string, int> RecentMonthlyAttendance { get; set; } = new();
+    }
+
     // Admin attendance/usage reporting (PB-8). Grouping logic is pure (plain
     // DateTime lists in, dictionaries out) so it's unit-testable without a DB.
     public class AttendanceReportService
@@ -80,6 +99,42 @@ namespace LoginFormASPCore6.Services
                 MonthlyTotals = GroupByMonth(checkInTimes),
                 TotalCheckIns = checkInTimes.Count,
                 AverageVisitMinutes = CalculateAverageMinutes(checkIns.Select(c => (c.CheckInTime, c.CheckOutTime)))
+            };
+        }
+
+        public async Task<AdminOverviewStats> BuildAdminOverviewAsync()
+        {
+            var memberships = await db.Memberships.AsNoTracking().ToListAsync();
+            var monthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+            var totalMembers = memberships.Select(m => m.UserId).Distinct().Count();
+            var active = memberships.Count(m => m.Status == MembershipStatus.Active);
+
+            var revenue = await db.Payments
+                .Where(p => p.Status == PaymentStatus.Paid && p.PaidAt >= monthStart)
+                .SumAsync(p => (decimal?)p.Amount) ?? 0m;
+
+            var monthlyAttendance = GroupByMonth(await db.CheckIns.Select(c => c.CheckInTime).ToListAsync())
+                .OrderBy(kv => kv.Key)
+                .TakeLast(6)
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            return new AdminOverviewStats
+            {
+                TotalMembers = totalMembers,
+                NewMembersThisMonth = memberships.Count(m => m.AppliedAt >= monthStart),
+                ActiveMemberships = active,
+                ActivePercentage = totalMembers == 0 ? 0 : 100.0 * active / totalMembers,
+                RevenueThisMonth = revenue,
+                MembersByCampus = memberships
+                    .Where(m => m.Status == MembershipStatus.Active)
+                    .GroupBy(m => m.Campus)
+                    .OrderByDescending(g => g.Count())
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                StatusSplit = memberships
+                    .GroupBy(m => m.Status)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                RecentMonthlyAttendance = monthlyAttendance
             };
         }
     }

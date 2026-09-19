@@ -5,7 +5,8 @@
 
 <div class="hero">
     <div class="hero-inner">
-        <h1>Train on<br />your terms.</h1>
+        <span class="eyebrow-pill">Durban University of Technology</span>
+        <h1>Your Gym,<br /><span class="accent">Digitised.</span></h1>
         <p>
             Register with your DUT email, get your membership approved,
             and book sessions, trainers and meals &mdash; all in one app.
@@ -17,9 +18,28 @@
         }
         else
         {
-            <a asp-controller="Home" asp-action="Login" class="btn btn-gradient btn-lg px-5 me-2">Sign In</a>
-            <a asp-controller="Home" asp-action="Signup" class="btn btn-outline-primary btn-lg px-5">Create Account</a>
+            <a asp-controller="Home" asp-action="Signup" class="btn btn-gradient btn-lg px-5 me-2">Create Account</a>
+            <a asp-controller="Home" asp-action="Login" class="btn btn-outline-primary btn-lg px-5">Sign In &rarr;</a>
         }
+    </div>
+</div>
+
+<div class="stats-strip">
+    <div class="stats-strip-item">
+        <div class="stat-num">@ViewBag.ActiveMembersCount</div>
+        <div class="stat-label">Active Members</div>
+    </div>
+    <div class="stats-strip-item">
+        <div class="stat-num">@ViewBag.ClassesThisWeekCount</div>
+        <div class="stat-label">Classes / Week</div>
+    </div>
+    <div class="stats-strip-item">
+        <div class="stat-num">@ViewBag.TrainerCount</div>
+        <div class="stat-label">Personal Trainers</div>
+    </div>
+    <div class="stats-strip-item">
+        <div class="stat-num">@ViewBag.CampusCount</div>
+        <div class="stat-label">Campus Gyms</div>
     </div>
 </div>
 

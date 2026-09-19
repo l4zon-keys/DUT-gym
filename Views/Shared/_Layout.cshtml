@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -16,122 +16,157 @@
     @{
         var isAuthenticated = Context.Session.GetString("UserSession") != null;
         var currentRole = Context.Session.GetString("UserRole");
-    }
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Dut Gym</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (isAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Dashboard">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Plans" asp-action="Index">Plans</a>
-                            </li>
-                            @if (currentRole == "Staff")
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Staff" asp-action="CheckIn">Check-In</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Manage">Equipment</a>
-                                </li>
-                            }
-                            @if (currentRole == "Admin")
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="PendingMemberships">Approvals</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ActiveMembers">Active Members</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="PendingStaff">Staff Applications</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="PendingTrainers">Trainer Applications</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reports">Reports</a></li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li><a class="dropdown-item" asp-controller="Plans" asp-action="Manage">Manage Plans</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Venues" asp-action="Manage">Manage Venues</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Manage">Manage Sessions</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Equipment" asp-action="Manage">Manage Equipment</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="ManageChallenges">Manage Challenges</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="ManageSlots">Manage Capacity Slots</a></li>
-                                    </ul>
-                                </li>
-                            }
-                            @if (currentRole == "Student")
-                            {
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-controller="Trainers" asp-action="Browse">Trainers</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="MyGoal">My Goals</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Goals" asp-action="Leaderboard">Attendance Leaderboard</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Sessions" asp-action="Browse">Book a Session</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Meals" asp-action="Index">Meal Planner</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="Index">Live Capacity</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Capacity" asp-action="Slots">Book a Slot</a></li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Profile">Achievements</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Challenges">Challenges</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Friends">Friends</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Gamification" asp-action="Leaderboard">XP Leaderboard</a></li>
-                                    </ul>
-                                </li>
-                            }
-                            @if (currentRole == "Trainer")
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Trainers" asp-action="IncomingRequests">Requests</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Trainers" asp-action="MyStudents">My Students</a>
-                                </li>
-                            }
-                        }
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    @if (isAuthenticated)
-                    {
-                        <a class="btn btn-outline-primary" asp-area="" asp-controller="Home" asp-action="Logout">Logout</a>
-                    }
-                    else
-                    {
-                        <a class="btn btn-gradient" asp-area="" asp-controller="Home" asp-action="Login">Login</a>
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+        var currentName = Context.Session.GetString("UserSession");
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Dut Gym e-Application - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        bool IsActive(string controller, string action) =>
+            string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+        string LinkClass(string controller, string action) =>
+            "sidebar-link" + (IsActive(controller, action) ? " active" : "");
+
+        var initials = string.IsNullOrWhiteSpace(currentName)
+            ? "?"
+            : string.Concat(currentName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpper(p[0])));
+    }
+
+    @if (isAuthenticated)
+    {
+        <div class="app-shell">
+            <div class="sidebar-backdrop" onclick="document.querySelector('.app-shell').classList.remove('sidebar-open')"></div>
+            <aside class="app-sidebar">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-mark">DG</div>
+                    <div class="sidebar-brand-text">DUT Gym<small>E-Application</small></div>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">@initials</div>
+                    <div>
+                        <div class="sidebar-user-name">@currentName</div>
+                        <div class="sidebar-user-role">@currentRole</div>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <a class="@LinkClass("Home", "Dashboard")" asp-controller="Home" asp-action="Dashboard"><i class="bi bi-grid-1x2-fill"></i>Overview</a>
+                    <a class="@LinkClass("Plans", "Index")" asp-controller="Plans" asp-action="Index"><i class="bi bi-card-checklist"></i>Membership Plans</a>
+
+                    @if (currentRole == "Student")
+                    {
+                        <div class="sidebar-section-label">My Fitness</div>
+                        <a class="@LinkClass("Membership", "Status")" asp-controller="Membership" asp-action="Status"><i class="bi bi-shield-check"></i>Membership</a>
+                        <a class="@LinkClass("Goals", "MyGoal")" asp-controller="Goals" asp-action="MyGoal"><i class="bi bi-bullseye"></i>Fitness Goals</a>
+                        <a class="@LinkClass("Sessions", "Browse")" asp-controller="Sessions" asp-action="Browse"><i class="bi bi-calendar-week"></i>Class Schedule</a>
+                        <a class="@LinkClass("Trainers", "MyTrainer")" asp-controller="Trainers" asp-action="MyTrainer"><i class="bi bi-person-badge"></i>My Trainer</a>
+                        <a class="@LinkClass("Trainers", "Browse")" asp-controller="Trainers" asp-action="Browse"><i class="bi bi-people"></i>Find a Trainer</a>
+                        <a class="@LinkClass("Meals", "Index")" asp-controller="Meals" asp-action="Index"><i class="bi bi-egg-fried"></i>Nutrition</a>
+                        <a class="@LinkClass("Capacity", "Index")" asp-controller="Capacity" asp-action="Index"><i class="bi bi-speedometer2"></i>Live Capacity</a>
+                        <a class="@LinkClass("Capacity", "Slots")" asp-controller="Capacity" asp-action="Slots"><i class="bi bi-calendar-plus"></i>Book a Slot</a>
+
+                        <div class="sidebar-section-label">Streaks &amp; Rewards</div>
+                        <a class="@LinkClass("Gamification", "Profile")" asp-controller="Gamification" asp-action="Profile"><i class="bi bi-trophy"></i>Achievements</a>
+                        <a class="@LinkClass("Gamification", "Challenges")" asp-controller="Gamification" asp-action="Challenges"><i class="bi bi-flag"></i>Challenges</a>
+                        <a class="@LinkClass("Gamification", "Friends")" asp-controller="Gamification" asp-action="Friends"><i class="bi bi-person-hearts"></i>Friends</a>
+                        <a class="@LinkClass("Gamification", "Leaderboard")" asp-controller="Gamification" asp-action="Leaderboard"><i class="bi bi-bar-chart-line"></i>XP Leaderboard</a>
+                        <a class="@LinkClass("Goals", "Leaderboard")" asp-controller="Goals" asp-action="Leaderboard"><i class="bi bi-fire"></i>Attendance Leaderboard</a>
+                    }
+
+                    @if (currentRole == "Staff")
+                    {
+                        <div class="sidebar-section-label">Front Desk</div>
+                        <a class="@LinkClass("Staff", "CheckIn")" asp-controller="Staff" asp-action="CheckIn"><i class="bi bi-door-open"></i>Check-In</a>
+                        <a class="@LinkClass("Equipment", "Manage")" asp-controller="Equipment" asp-action="Manage"><i class="bi bi-tools"></i>Equipment</a>
+                    }
+
+                    @if (currentRole == "Trainer")
+                    {
+                        <div class="sidebar-section-label">Coaching</div>
+                        <a class="@LinkClass("Trainers", "IncomingRequests")" asp-controller="Trainers" asp-action="IncomingRequests"><i class="bi bi-inbox"></i>Requests</a>
+                        <a class="@LinkClass("Trainers", "MyStudents")" asp-controller="Trainers" asp-action="MyStudents"><i class="bi bi-people"></i>My Students</a>
+                    }
+
+                    @if (currentRole == "Admin")
+                    {
+                        <div class="sidebar-section-label">Applications</div>
+                        <a class="@LinkClass("Admin", "PendingMemberships")" asp-controller="Admin" asp-action="PendingMemberships"><i class="bi bi-inbox"></i>Approvals</a>
+                        <a class="@LinkClass("Admin", "ActiveMembers")" asp-controller="Admin" asp-action="ActiveMembers"><i class="bi bi-people"></i>Active Members</a>
+                        <a class="@LinkClass("Admin", "PendingStaff")" asp-controller="Admin" asp-action="PendingStaff"><i class="bi bi-person-vcard"></i>Staff Applications</a>
+                        <a class="@LinkClass("Admin", "PendingTrainers")" asp-controller="Admin" asp-action="PendingTrainers"><i class="bi bi-person-badge"></i>Trainer Applications</a>
+                        <a class="@LinkClass("Admin", "Reports")" asp-controller="Admin" asp-action="Reports"><i class="bi bi-graph-up"></i>Reports</a>
+
+                        <div class="sidebar-section-label">Manage</div>
+                        <a class="@LinkClass("Plans", "Manage")" asp-controller="Plans" asp-action="Manage"><i class="bi bi-card-checklist"></i>Plans</a>
+                        <a class="@LinkClass("Venues", "Manage")" asp-controller="Venues" asp-action="Manage"><i class="bi bi-geo-alt"></i>Venues</a>
+                        <a class="@LinkClass("Sessions", "Manage")" asp-controller="Sessions" asp-action="Manage"><i class="bi bi-calendar-week"></i>Sessions</a>
+                        <a class="@LinkClass("Equipment", "Manage")" asp-controller="Equipment" asp-action="Manage"><i class="bi bi-tools"></i>Equipment</a>
+                        <a class="@LinkClass("Gamification", "ManageChallenges")" asp-controller="Gamification" asp-action="ManageChallenges"><i class="bi bi-flag"></i>Challenges</a>
+                        <a class="@LinkClass("Capacity", "ManageSlots")" asp-controller="Capacity" asp-action="ManageSlots"><i class="bi bi-speedometer2"></i>Capacity Slots</a>
+                    }
+
+                    <div class="sidebar-section-label">Account</div>
+                    <a class="@LinkClass("Home", "Privacy")" asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-lock"></i>Privacy</a>
+                </nav>
+                <div class="sidebar-footer">
+                    <a class="sidebar-link" asp-controller="Home" asp-action="Logout"><i class="bi bi-box-arrow-right"></i>Sign Out</a>
+                </div>
+            </aside>
+
+            <div class="app-content">
+                <div class="app-topbar">
+                    <button type="button" class="sidebar-toggle" onclick="document.querySelector('.app-shell').classList.toggle('sidebar-open')" aria-label="Toggle navigation">
+                        <i class="bi bi-list" style="font-size:1.3rem;"></i>
+                    </button>
+                    <a class="navbar-brand" style="color:var(--dut-ink) !important;" asp-controller="Home" asp-action="Index">Dut Gym</a>
+                </div>
+                <main role="main" class="app-main">
+                    @RenderBody()
+                </main>
+            </div>
         </div>
-    </footer>
+    }
+    else
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Dut Gym</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a class="btn btn-outline-primary me-2" asp-area="" asp-controller="Home" asp-action="Login">Sign In</a>
+                        <a class="btn btn-gradient" asp-area="" asp-controller="Home" asp-action="Signup">Create Account</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2026 - Dut Gym e-Application - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
+        </footer>
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

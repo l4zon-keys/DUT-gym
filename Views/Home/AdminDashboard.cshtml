@@ -1,39 +1,152 @@
 @model LoginFormASPCore6.Models.User
+@using LoginFormASPCore6.Services
+@using LoginFormASPCore6.Models
 
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Admin Overview";
+    var overview = (AdminOverviewStats)ViewBag.Overview;
+    var capacity = ViewBag.Capacity as CapacityStatus;
+    var maxMonthly = overview.RecentMonthlyAttendance.Any() ? overview.RecentMonthlyAttendance.Values.Max() : 0;
+    var maxCampus = overview.MembersByCampus.Any() ? overview.MembersByCampus.Values.Max() : 0;
+    var totalStatus = overview.StatusSplit.Values.Sum();
 }
 
-<div class="py-4">
-    <div class="dashboard-card mx-auto" style="max-width: 640px;">
-        <div class="dashboard-banner">
-            <span class="role-badge">Admin</span>
-            <h1>Welcome, @Model.EmpName</h1>
-            <p>This is your DUT Gym admin overview.</p>
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h1 class="mb-1" style="font-size:1.6rem;">Admin Overview</h1>
+            <p class="form-text-hint mb-0">Welcome back, @Model.EmpName &mdash; here's how the gym is doing.</p>
         </div>
-        <div class="dashboard-body">
-            <div class="info-row">
-                <span class="info-label"><i class="bi bi-person"></i>Full Name</span>
-                <span class="info-value">@Model.EmpName</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><i class="bi bi-envelope"></i>Email</span>
-                <span class="info-value">@Model.Email</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><i class="bi bi-person-badge"></i>Role</span>
-                <span class="info-value">Admin</span>
-            </div>
+        <span class="role-badge" style="background:rgba(37,99,235,0.1); border-color:rgba(37,99,235,0.3); color:var(--dut-blue);">Admin</span>
+    </div>
 
-            <div class="mt-4 d-flex gap-2 flex-wrap">
-                <a asp-controller="Admin" asp-action="PendingMemberships" class="btn btn-gradient">Pending Applications</a>
-                <a asp-controller="Admin" asp-action="ActiveMembers" class="btn btn-outline-primary">Active Members</a>
-                <a asp-controller="Admin" asp-action="PendingStaff" class="btn btn-outline-primary">Staff Applications</a>
-                <a asp-controller="Admin" asp-action="PendingTrainers" class="btn btn-outline-primary">Trainer Applications</a>
-                <a asp-controller="Admin" asp-action="Reports" class="btn btn-outline-primary">Reports</a>
-                <a asp-controller="Plans" asp-action="Manage" class="btn btn-outline-primary">Manage Plans</a>
-                <a asp-controller="Venues" asp-action="Manage" class="btn btn-outline-primary">Manage Venues</a>
-                <a asp-controller="Sessions" asp-action="Manage" class="btn btn-outline-primary">Manage Sessions</a>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="stat-tile-value">@overview.TotalMembers</div>
+                    <div class="stat-tile-label">Total Members</div>
+                    <div class="stat-tile-sub">+@overview.NewMembersThisMonth this month</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-tile">
+                <div class="stat-tile-icon success"><i class="bi bi-shield-check"></i></div>
+                <div>
+                    <div class="stat-tile-value">@overview.ActiveMemberships</div>
+                    <div class="stat-tile-label">Active Memberships</div>
+                    <div class="stat-tile-sub">@overview.ActivePercentage.ToString("0.0")% active</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-tile">
+                <div class="stat-tile-icon warning"><i class="bi bi-person-walking"></i></div>
+                <div>
+                    <div class="stat-tile-value">@(capacity?.CurrentOccupancy ?? 0)</div>
+                    <div class="stat-tile-label">In Gym Right Now</div>
+                    <div class="stat-tile-sub">
+                        @(capacity != null && capacity.Threshold > 0 ? $"{100.0 * capacity.CurrentOccupancy / capacity.Threshold:0}% of capacity" : "")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-tile">
+                <div class="stat-tile-icon teal"><i class="bi bi-cash-coin"></i></div>
+                <div>
+                    <div class="stat-tile-value">R@(overview.RevenueThisMonth.ToString("N0"))</div>
+                    <div class="stat-tile-label">Revenue (@DateTime.UtcNow.ToString("MMM"))</div>
+                    <div class="stat-tile-sub">Based on @overview.ActiveMemberships active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <div class="section-card h-100">
+                <h5 class="mb-3">Monthly Attendance Trend</h5>
+                @if (!overview.RecentMonthlyAttendance.Any())
+                {
+                    <p class="text-muted mb-0">No check-in data yet.</p>
+                }
+                else
+                {
+                    <div class="report-bars">
+                        @foreach (var month in overview.RecentMonthlyAttendance)
+                        {
+                            var heightPct = maxMonthly == 0 ? 0 : Math.Max(4, (int)(100.0 * month.Value / maxMonthly));
+                            <div class="report-bar-col" title="@month.Key - @month.Value check-in(s)">
+                                <div class="report-bar-track">
+                                    <div class="report-bar" style="height: @(heightPct)%;"></div>
+                                </div>
+                                <small>@DateTime.ParseExact(month.Key, "yyyy-MM", null).ToString("MMM")</small>
+                            </div>
+                        }
+                    </div>
+                }
+                <a asp-controller="Admin" asp-action="Reports" class="form-text-hint mt-3 d-inline-block">View full reports &rarr;</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="section-card h-100">
+                <h5 class="mb-3">Members by Campus</h5>
+                @if (!overview.MembersByCampus.Any())
+                {
+                    <p class="text-muted mb-0">No active memberships yet.</p>
+                }
+                else
+                {
+                    @foreach (var campus in overview.MembersByCampus)
+                    {
+                        var widthPct = maxCampus == 0 ? 0 : Math.Max(4, (int)(100.0 * campus.Value / maxCampus));
+                        <div class="hbar-row">
+                            <div class="hbar-row-label"><span>@campus.Key</span><span>@campus.Value</span></div>
+                            <div class="hbar-track"><div class="hbar-fill" style="width:@(widthPct)%;"></div></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <div class="section-card h-100">
+                <h5 class="mb-3">Membership Status Split</h5>
+                @if (totalStatus == 0)
+                {
+                    <p class="text-muted mb-0">No memberships yet.</p>
+                }
+                else
+                {
+                    @foreach (var status in overview.StatusSplit.OrderByDescending(s => s.Value))
+                    {
+                        var widthPct = Math.Max(2, (int)(100.0 * status.Value / totalStatus));
+                        <div class="hbar-row">
+                            <div class="hbar-row-label"><span>@status.Key</span><span>@status.Value</span></div>
+                            <div class="hbar-track"><div class="hbar-fill status-fill-@(status.Key.ToString().ToLower())" style="width:@(widthPct)%;"></div></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="section-card h-100">
+                <h5 class="mb-3">Quick Actions</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="Admin" asp-action="PendingMemberships" class="btn btn-gradient btn-sm">Pending Applications</a>
+                    <a asp-controller="Admin" asp-action="ActiveMembers" class="btn btn-outline-primary btn-sm">Active Members</a>
+                    <a asp-controller="Admin" asp-action="PendingStaff" class="btn btn-outline-primary btn-sm">Staff Applications</a>
+                    <a asp-controller="Admin" asp-action="PendingTrainers" class="btn btn-outline-primary btn-sm">Trainer Applications</a>
+                    <a asp-controller="Admin" asp-action="Reports" class="btn btn-outline-primary btn-sm">Reports</a>
+                    <a asp-controller="Plans" asp-action="Manage" class="btn btn-outline-primary btn-sm">Manage Plans</a>
+                    <a asp-controller="Venues" asp-action="Manage" class="btn btn-outline-primary btn-sm">Manage Venues</a>
+                    <a asp-controller="Sessions" asp-action="Manage" class="btn btn-outline-primary btn-sm">Manage Sessions</a>
+                </div>
             </div>
         </div>
     </div>

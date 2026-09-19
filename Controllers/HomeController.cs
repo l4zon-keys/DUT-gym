@@ -16,18 +16,25 @@ namespace LoginFormASPCore6.Controllers
         private readonly GymCapacityService capacityService;
         private readonly AttendanceStreakService streakService;
         private readonly GamificationService gamificationService;
+        private readonly AttendanceReportService reportService;
         private readonly PasswordHasher<User> passwordHasher = new();
 
-        public HomeController(MyDbContext context, GymCapacityService capacityService, AttendanceStreakService streakService, GamificationService gamificationService)
+        public HomeController(MyDbContext context, GymCapacityService capacityService, AttendanceStreakService streakService, GamificationService gamificationService, AttendanceReportService reportService)
         {
             this.context = context;
             this.capacityService = capacityService;
             this.streakService = streakService;
             this.gamificationService = gamificationService;
+            this.reportService = reportService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var now = DateTime.UtcNow;
+            ViewBag.ActiveMembersCount = await context.Memberships.CountAsync(m => m.Status == Models.MembershipStatus.Active);
+            ViewBag.ClassesThisWeekCount = await context.Sessions.CountAsync(s => s.StartTime >= now && s.StartTime < now.AddDays(7));
+            ViewBag.TrainerCount = await context.Users.CountAsync(u => u.Role == EmailRoleHelper.TrainerRole && u.ApprovalStatus == Models.ApprovalStatus.Approved);
+            ViewBag.CampusCount = await context.Memberships.Select(m => m.Campus).Distinct().CountAsync();
             return View();
         }
 
@@ -253,7 +260,7 @@ namespace LoginFormASPCore6.Controllers
             return View(user);
         }
 
-        public IActionResult AdminDashboard()
+        public async Task<IActionResult> AdminDashboard()
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -264,6 +271,9 @@ namespace LoginFormASPCore6.Controllers
             {
                 return RedirectToRoleDashboard(user.Role);
             }
+
+            ViewBag.Overview = await reportService.BuildAdminOverviewAsync();
+            ViewBag.Capacity = await capacityService.GetCurrentStatusAsync();
             return View(user);
         }
 
