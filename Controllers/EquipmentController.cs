@@ -2,6 +2,7 @@ using LoginFormASPCore6.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QRCoder;
 
 namespace LoginFormASPCore6.Controllers
 {
@@ -25,6 +26,7 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             var equipment = await Db.Equipment
+                .Include(e => e.Venue)
                 .OrderBy(e => e.Status == EquipmentStatus.Active ? 1 : 0)
                 .ThenByDescending(e => e.Severity)
                 .ThenBy(e => e.Name)
@@ -32,10 +34,12 @@ namespace LoginFormASPCore6.Controllers
             return View(equipment);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var (_, redirect) = RequireStaff();
             if (redirect != null) return redirect;
+
+            await PopulateVenuesAsync();
             return View(new Equipment());
         }
 
@@ -47,12 +51,17 @@ namespace LoginFormASPCore6.Controllers
             if (redirect != null) return redirect;
 
             ModelState.Remove(nameof(Equipment.Status));
+            ModelState.Remove(nameof(Equipment.QrCode));
 
-            var duplicate = await Db.Equipment.AnyAsync(e =>
-                e.Name == equipment.Name && e.Location == equipment.Location && e.Status != EquipmentStatus.Inactive);
-            if (duplicate)
+            var duplicateSerial = await Db.Equipment.AnyAsync(e => e.SerialNumber == equipment.SerialNumber);
+            if (duplicateSerial)
             {
-                ModelState.AddModelError(string.Empty, "Equipment with this name and location is already registered.");
+                ModelState.AddModelError(nameof(Equipment.SerialNumber), "This serial number is already registered.");
+            }
+
+            if (equipment.VenueId != null && !await Db.Venues.AnyAsync(v => v.Id == equipment.VenueId))
+            {
+                ModelState.AddModelError(nameof(Equipment.VenueId), "Please select a valid venue.");
             }
 
             ValidatePurchaseDates(equipment);
@@ -73,10 +82,12 @@ namespace LoginFormASPCore6.Controllers
 
             if (!ModelState.IsValid)
             {
+                await PopulateVenuesAsync();
                 return View(equipment);
             }
 
             equipment.Status = EquipmentStatus.Active;
+            equipment.QrCode = Guid.NewGuid().ToString("N");
             Db.Equipment.Add(equipment);
             await Db.SaveChangesAsync();
 
@@ -86,8 +97,8 @@ namespace LoginFormASPCore6.Controllers
                 await Db.SaveChangesAsync();
             }
 
-            TempData["Success"] = "Equipment added.";
-            return RedirectToAction(nameof(Manage));
+            TempData["Success"] = "Equipment added. Print the QR code and attach it to the machine.";
+            return RedirectToAction(nameof(PrintQr), new { id = equipment.Id });
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -98,6 +109,7 @@ namespace LoginFormASPCore6.Controllers
             var equipment = await Db.Equipment.FindAsync(id);
             if (equipment == null) return NotFound();
 
+            await PopulateVenuesAsync();
             return View(equipment);
         }
 
@@ -114,12 +126,17 @@ namespace LoginFormASPCore6.Controllers
             if (existing == null) return NotFound();
 
             ModelState.Remove(nameof(Equipment.Status));
+            ModelState.Remove(nameof(Equipment.QrCode));
 
-            var duplicate = await Db.Equipment.AnyAsync(e =>
-                e.Id != id && e.Name == equipment.Name && e.Location == equipment.Location && e.Status != EquipmentStatus.Inactive);
-            if (duplicate)
+            var duplicateSerial = await Db.Equipment.AnyAsync(e => e.Id != id && e.SerialNumber == equipment.SerialNumber);
+            if (duplicateSerial)
             {
-                ModelState.AddModelError(string.Empty, "Equipment with this name and location is already registered.");
+                ModelState.AddModelError(nameof(Equipment.SerialNumber), "This serial number is already registered.");
+            }
+
+            if (equipment.VenueId != null && !await Db.Venues.AnyAsync(v => v.Id == equipment.VenueId))
+            {
+                ModelState.AddModelError(nameof(Equipment.VenueId), "Please select a valid venue.");
             }
 
             ValidatePurchaseDates(equipment);
@@ -141,11 +158,15 @@ namespace LoginFormASPCore6.Controllers
             if (!ModelState.IsValid)
             {
                 equipment.Status = existing.Status;
+                equipment.QrCode = existing.QrCode;
+                await PopulateVenuesAsync();
                 return View(equipment);
             }
 
             existing.Name = equipment.Name;
-            existing.Location = equipment.Location;
+            existing.Category = equipment.Category;
+            existing.SerialNumber = equipment.SerialNumber;
+            existing.VenueId = equipment.VenueId;
             existing.Brand = equipment.Brand;
             existing.Supplier = equipment.Supplier;
             existing.PurchaseDate = equipment.PurchaseDate;
@@ -324,10 +345,47 @@ namespace LoginFormASPCore6.Controllers
             return RedirectToAction(nameof(Manage));
         }
 
+        public async Task<IActionResult> PrintQr(int id)
+        {
+            var (_, redirect) = RequireStaff();
+            if (redirect != null) return redirect;
+
+            var equipment = await Db.Equipment.Include(e => e.Venue).FirstOrDefaultAsync(e => e.Id == id);
+            if (equipment == null) return NotFound();
+
+            return View(equipment);
+        }
+
+        public async Task<IActionResult> QrImage(int id)
+        {
+            var (_, redirect) = RequireStaff();
+            if (redirect != null) return redirect;
+
+            var equipment = await Db.Equipment.FindAsync(id);
+            if (equipment == null || string.IsNullOrEmpty(equipment.QrCode)) return NotFound();
+
+            using var generator = new QRCodeGenerator();
+            using var data = generator.CreateQrCode(equipment.QrCode, QRCodeGenerator.ECCLevel.Q);
+            var pngBytes = new PngByteQRCode(data).GetGraphic(10);
+            return File(pngBytes, "image/png");
+        }
+
+        private async Task PopulateVenuesAsync()
+        {
+            ViewBag.Venues = await Db.Venues
+                .Where(v => v.IsActive)
+                .OrderBy(v => v.Name)
+                .ToListAsync();
+        }
+
         private void ValidatePurchaseDates(Equipment equipment)
         {
             if (equipment.PurchaseDate == null) return;
 
+            if (equipment.PurchaseDate > DateTime.Today)
+            {
+                ModelState.AddModelError(nameof(Equipment.PurchaseDate), "Purchase date can't be in the future.");
+            }
             if (equipment.WarrantyExpiryDate != null && equipment.WarrantyExpiryDate < equipment.PurchaseDate)
             {
                 ModelState.AddModelError(nameof(Equipment.WarrantyExpiryDate), "Warranty expiry can't be before the purchase date.");

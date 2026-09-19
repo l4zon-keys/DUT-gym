@@ -343,6 +343,28 @@ namespace LoginFormASPCore6.Models
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<Equipment>(entity =>
+            {
+                // Serial number/venue are required at registration (server-validated
+                // in EquipmentController), but kept nullable at the DB level since
+                // equipment registered before this field existed won't have one.
+                entity.Property(e => e.SerialNumber).IsRequired(false);
+                entity.Property(e => e.VenueId).IsRequired(false);
+
+                entity.HasIndex(e => e.SerialNumber)
+                    .IsUnique()
+                    .HasFilter("[SerialNumber] IS NOT NULL");
+
+                entity.HasIndex(e => e.QrCode)
+                    .IsUnique()
+                    .HasFilter("[QrCode] IS NOT NULL");
+
+                entity.HasOne(e => e.Venue)
+                    .WithMany()
+                    .HasForeignKey(e => e.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<CapacitySlotBooking>(entity =>
             {
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);

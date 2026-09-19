@@ -13,9 +13,27 @@ namespace LoginFormASPCore6.Models
         [StringLength(100, MinimumLength = 2)]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "Please enter a location.")]
-        [StringLength(100)]
-        public string? Location { get; set; }
+        [Required(ErrorMessage = "Please enter a category.")]
+        [StringLength(60)]
+        public string? Category { get; set; }
+
+        [Required(ErrorMessage = "Please enter a serial number.")]
+        [StringLength(60)]
+        [Display(Name = "Serial Number")]
+        public string? SerialNumber { get; set; }
+
+        [Required(ErrorMessage = "Please select a venue.")]
+        [Display(Name = "Venue")]
+        public int? VenueId { get; set; }
+
+        [ForeignKey(nameof(VenueId))]
+        public Venue? Venue { get; set; }
+
+        // System-generated on registration; printed and attached to the machine.
+        // Not user-editable.
+        [StringLength(32)]
+        [Display(Name = "QR Code")]
+        public string? QrCode { get; set; }
 
         public EquipmentStatus Status { get; set; } = EquipmentStatus.Active;
 

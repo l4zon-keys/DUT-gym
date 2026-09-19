@@ -1,0 +1,21 @@
+@model Equipment
+
+@{
+    ViewData["Title"] = "Equipment QR Code";
+    Layout = "_Layout";
+}
+
+<div class="py-4">
+    <div class="section-card mx-auto text-center" style="max-width: 420px;">
+        <h1 class="mb-3">@Model.Name</h1>
+        <p class="form-text-hint mb-1">@Model.Category @(Model.Venue != null ? $"· {Model.Venue.Name}" : "")</p>
+        <p class="form-text-hint mb-3">Serial: @Model.SerialNumber</p>
+
+        <img src="@Url.Action("QrImage", new { id = Model.Id })" alt="QR code for @Model.Name" style="width: 240px; height: 240px;" />
+
+        <div class="mt-4 d-print-none">
+            <button type="button" class="btn btn-gradient" onclick="window.print()">Print</button>
+            <a asp-action="Manage" class="btn btn-outline-primary">Back to Equipment</a>
+        </div>
+    </div>
+</div>

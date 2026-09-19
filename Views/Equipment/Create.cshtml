@@ -1,4 +1,5 @@
 @model Equipment
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Add Equipment";
@@ -16,9 +17,21 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <label asp-for="Location" class="form-label"></label>
-                <input asp-for="Location" class="form-control" placeholder="e.g. Cardio Room" />
-                <span asp-validation-for="Location" class="text-danger"></span>
+                <label asp-for="Category" class="form-label"></label>
+                <input asp-for="Category" class="form-control" placeholder="e.g. Cardio" />
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="SerialNumber" class="form-label"></label>
+                <input asp-for="SerialNumber" class="form-control" />
+                <span asp-validation-for="SerialNumber" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="VenueId" class="form-label"></label>
+                <select asp-for="VenueId" class="form-control" asp-items="@(new SelectList(ViewBag.Venues, "Id", "Name"))">
+                    <option value="">-- Select a venue --</option>
+                </select>
+                <span asp-validation-for="VenueId" class="text-danger"></span>
             </div>
             <div class="mb-3">
                 <label class="form-label">Equipment Photo (optional)</label>

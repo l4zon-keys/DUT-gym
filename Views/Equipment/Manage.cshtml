@@ -44,10 +44,17 @@
                     }
                     <div>
                         <h5 class="mb-1">@item.Name</h5>
-                        @if (!string.IsNullOrEmpty(item.Location) || !string.IsNullOrEmpty(item.Brand))
-                        {
-                            <p class="form-text-hint mb-1">@item.Location@(!string.IsNullOrEmpty(item.Location) && !string.IsNullOrEmpty(item.Brand) ? " · " : "")@item.Brand</p>
-                        }
+                        <p class="form-text-hint mb-1">
+                            @item.Category
+                            @if (item.Venue != null)
+                            {
+                                @: · @item.Venue.Name
+                            }
+                            @if (!string.IsNullOrEmpty(item.SerialNumber))
+                            {
+                                @: · SN @item.SerialNumber
+                            }
+                        </p>
                         <div class="d-flex gap-2 align-items-center flex-wrap">
                             <span class="status-badge @statusClass">@item.Status</span>
                             @if (item.Status == EquipmentStatus.Faulty && item.Severity != null)
@@ -77,6 +84,7 @@
                 <div class="d-flex gap-2 flex-wrap">
                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#details-@item.Id">Asset Details</button>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="PrintQr" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">QR Code</a>
                     @if (item.Status != EquipmentStatus.Faulty && item.Status != EquipmentStatus.Inactive)
                     {
                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#fault-@item.Id">Report Fault</button>
