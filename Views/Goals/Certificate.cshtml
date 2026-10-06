@@ -14,9 +14,11 @@
         <h2 class="mb-3">@Model.EmpName</h2>
         <p class="mb-1">completed <strong>@ViewBag.Visits</strong> gym visits in</p>
         <h4 class="mb-4">@ViewBag.Month</h4>
+        <p class="form-text-hint mb-4">Requirement met: @ViewBag.RequiredVisits visits in the current month.</p>
 
-        <div class="mt-4 no-print">
+        <div class="mt-4 no-print d-flex gap-2 justify-content-center flex-wrap">
             <button onclick="window.print()" class="btn btn-gradient">Print / Save as PDF</button>
+            <a asp-action="DownloadCertificate" class="btn btn-outline-primary">Download Certificate</a>
         </div>
     </div>
 </div>

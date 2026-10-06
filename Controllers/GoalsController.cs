@@ -2,6 +2,8 @@ using LoginFormASPCore6.Models;
 using LoginFormASPCore6.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security;
+using System.Text;
 
 namespace LoginFormASPCore6.Controllers
 {
@@ -32,6 +34,7 @@ namespace LoginFormASPCore6.Controllers
             ViewBag.Streak = await streakService.GetMonthlyStreakAsync(student!.Id);
             ViewBag.VisitsThisMonth = await streakService.GetVisitCountForMonthAsync(student.Id, DateTime.UtcNow);
             ViewBag.CertificateEligible = AttendanceStreakService.IsEligibleForCertificate((int)ViewBag.VisitsThisMonth);
+            ViewBag.CertificateRequiredVisits = 10;
             ViewBag.DaysThisWeek = await streakService.GetDaysAttendedThisWeekAsync(student.Id);
             ViewBag.AverageVisitMinutes = await streakService.GetAverageVisitMinutesAsync(student.Id);
             ViewBag.TodayMinutes = await streakService.GetTodayMinutesAsync(student.Id);
@@ -137,7 +140,55 @@ namespace LoginFormASPCore6.Controllers
 
             ViewBag.Visits = visits;
             ViewBag.Month = DateTime.UtcNow.ToString("MMMM yyyy");
+            ViewBag.RequiredVisits = 10;
             return View(student);
+        }
+
+        public async Task<IActionResult> DownloadCertificate()
+        {
+            var (student, redirect) = RequireStudent();
+            if (redirect != null) return redirect;
+
+            var now = DateTime.UtcNow;
+            var visits = await streakService.GetVisitCountForMonthAsync(student!.Id, now);
+            if (!AttendanceStreakService.IsEligibleForCertificate(visits))
+            {
+                TempData["Error"] = "You haven't met this month's attendance target yet.";
+                return RedirectToAction(nameof(MyGoal));
+            }
+
+            var month = now.ToString("MMMM yyyy");
+            var svg = BuildCertificateSvg(student.EmpName, visits, month, now);
+            var fileName = $"DUT-Gym-Certificate-{student.StudentNumber}-{now:yyyy-MM}.svg";
+            return File(Encoding.UTF8.GetBytes(svg), "image/svg+xml", fileName);
+        }
+
+        private static string BuildCertificateSvg(string studentName, int visits, string month, DateTime issuedAt)
+        {
+            var safeName = SecurityElement.Escape(studentName);
+            var safeMonth = SecurityElement.Escape(month);
+            var issued = SecurityElement.Escape(issuedAt.ToString("dd MMMM yyyy"));
+
+            return $"""
+                <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="990" viewBox="0 0 1400 990">
+                  <rect width="1400" height="990" fill="#f8fafc"/>
+                  <rect x="70" y="70" width="1260" height="850" rx="18" fill="#ffffff" stroke="#0f4c81" stroke-width="12"/>
+                  <rect x="105" y="105" width="1190" height="780" rx="10" fill="none" stroke="#e0b44c" stroke-width="4"/>
+                  <text x="700" y="190" text-anchor="middle" font-family="Georgia, serif" font-size="62" fill="#0f4c81">Certificate of Consistency</text>
+                  <text x="700" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#475569">DUT Gym e-Application</text>
+                  <text x="700" y="365" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#334155">This certifies that</text>
+                  <text x="700" y="455" text-anchor="middle" font-family="Georgia, serif" font-size="70" fill="#111827">{safeName}</text>
+                  <line x1="320" y1="485" x2="1080" y2="485" stroke="#e0b44c" stroke-width="3"/>
+                  <text x="700" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#334155">completed {visits} gym visits in {safeMonth}</text>
+                  <text x="700" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#64748b">Awarded for meeting the monthly attendance target of 10 visits.</text>
+                  <circle cx="700" cy="735" r="72" fill="#0f4c81"/>
+                  <circle cx="700" cy="735" r="58" fill="#ffffff" stroke="#e0b44c" stroke-width="6"/>
+                  <text x="700" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#0f4c81">DUT</text>
+                  <text x="700" y="758" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#0f4c81">GYM</text>
+                  <text x="280" y="835" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#475569">Issued {issued}</text>
+                  <text x="1120" y="835" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#475569">Verified by attendance records</text>
+                </svg>
+                """;
         }
     }
 }

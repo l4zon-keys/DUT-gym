@@ -45,54 +45,41 @@ builder.Services.AddHostedService<TrainerReminderBackgroundService>();
 
 var app = builder.Build();
 
-// Dev-only seeded admin so there's always a known way in locally without manual
-// SQL. Gated to Development so this known password never exists on a real
-// deployment (Azure, etc.) - only ever runs against your own LocalDB.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-    db.Database.Migrate();
+    var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+    var usingLocalDb = defaultConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase);
 
-    const string devAdminEmail = "admin@dut.ac.za";
-    if (!db.Users.Any(u => u.Email == devAdminEmail))
+    // Dev-only seeded admin so there's always a known way in locally without manual
+    // SQL. Gated to Development so this known password never exists on a real
+    // deployment (Azure, etc.) - only ever runs against your own LocalDB.
+    if (app.Environment.IsDevelopment() && usingLocalDb)
     {
-        var hasher = new PasswordHasher<User>();
-        var admin = new User
+        db.Database.Migrate();
+
+        const string devAdminEmail = "admin@dut.ac.za";
+        if (!db.Users.Any(u => u.Email == devAdminEmail))
         {
-            EmpName = "Admin",
-            Gender = "Male",
-            StudentNumber = "00000000",
-            Email = devAdminEmail,
-            Role = EmailRoleHelper.AdminRole
-        };
-        admin.Password = hasher.HashPassword(admin, "Admin123!");
-        db.Users.Add(admin);
-        db.SaveChanges();
+            var hasher = new PasswordHasher<User>();
+            var admin = new User
+            {
+                EmpName = "Admin",
+                Gender = "Male",
+                StudentNumber = "00000000",
+                Email = devAdminEmail,
+                Role = EmailRoleHelper.AdminRole
+            };
+            admin.Password = hasher.HashPassword(admin, "Admin123!");
+            db.Users.Add(admin);
+            db.SaveChanges();
+        }
     }
 
-    // Gamification catalog - reference data needed in every environment, not a
-    // dev-only convenience, so it's seeded unconditionally (idempotent) rather
-    // than gated to Development like the admin account above.
-    if (!db.Badges.Any())
+    await DemoDataSeeder.SeedReferenceDataAsync(db);
+    if (builder.Configuration.GetValue<bool>("DemoData:Enabled"))
     {
-        db.Badges.AddRange(
-            new Badge { Name = "Early Bird", Description = "Checked in before 7am.", IconClass = "bi-sunrise", Code = "early_bird" },
-            new Badge { Name = "5-Day Streak", Description = "Attended 5 different days in one week.", IconClass = "bi-fire", Code = "five_day_streak" },
-            new Badge { Name = "Zumba Fanatic", Description = "Booked 5 Zumba classes.", IconClass = "bi-music-note-beamed", Code = "zumba_fanatic" }
-        );
-        db.SaveChanges();
-    }
-
-    if (!db.Rewards.Any())
-    {
-        db.Rewards.AddRange(
-            new Reward { Name = "10% Discount Code", Description = "10% off your next membership renewal.", IconClass = "bi-tag", RequiredXp = 200 },
-            new Reward { Name = "Certificate of Achievement", Description = "Recognition for consistent gym attendance.", IconClass = "bi-patch-check", RequiredXp = 400 },
-            new Reward { Name = "Free PT Session", Description = "One complimentary personal training session.", IconClass = "bi-person-check", RequiredXp = 700 },
-            new Reward { Name = "Gym Merch", Description = "A branded DUT Gym t-shirt or water bottle.", IconClass = "bi-bag-heart", RequiredXp = 1000 }
-        );
-        db.SaveChanges();
+        await DemoDataSeeder.SeedShowcaseDataAsync(db);
     }
 }
 
@@ -101,9 +88,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

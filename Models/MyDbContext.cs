@@ -40,6 +40,7 @@ namespace LoginFormASPCore6.Models
         public virtual DbSet<Friendship> Friendships { get; set; } = null!;
         public virtual DbSet<CapacitySlot> CapacitySlots { get; set; } = null!;
         public virtual DbSet<CapacitySlotBooking> CapacitySlotBookings { get; set; } = null!;
+        public virtual DbSet<StudentMealPlanEntry> StudentMealPlanEntries { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -373,6 +374,20 @@ namespace LoginFormASPCore6.Models
                     .WithMany()
                     .HasForeignKey(e => e.CapacitySlotId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<StudentMealPlanEntry>(entity =>
+            {
+                entity.Property(e => e.Day).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.Slot).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.EstimatedCostRand).HasColumnType("decimal(10,2)");
+
+                entity.HasIndex(e => new { e.UserId, e.WeekStartDate, e.Day, e.Slot }).IsUnique();
 
                 entity.HasOne(e => e.User)
                     .WithMany()

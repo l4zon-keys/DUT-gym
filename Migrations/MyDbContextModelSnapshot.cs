@@ -697,6 +697,65 @@ namespace LoginFormASPCore6.Migrations
                     b.ToTable("SessionBookings");
                 });
 
+            modelBuilder.Entity("LoginFormASPCore6.Models.StudentMealPlanEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CaloriesKcal")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CarbsG")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("EstimatedCostRand")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("FatG")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MealName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("ProteinG")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("WeekStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "WeekStartDate", "Day", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("StudentMealPlanEntries");
+                });
+
             modelBuilder.Entity("LoginFormASPCore6.Models.TrainerRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -1200,6 +1259,17 @@ namespace LoginFormASPCore6.Migrations
                         .IsRequired();
 
                     b.Navigation("Session");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LoginFormASPCore6.Models.StudentMealPlanEntry", b =>
+                {
+                    b.HasOne("LoginFormASPCore6.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

@@ -1,5 +1,6 @@
 @model List<LoginFormASPCore6.Services.MealMatch>
 @using LoginFormASPCore6.Services
+@using LoginFormASPCore6.Models
 
 @{
     ViewData["Title"] = "Meal Planner";
@@ -7,11 +8,25 @@
     var ingredients = ViewBag.Ingredients as string;
     var calorieEstimate = ViewBag.CalorieEstimate as DailyCalorieEstimate;
     var tips = ViewBag.Tips as List<string>;
+    var myMealPlan = ViewBag.MyMealPlan as List<StudentMealPlanEntry> ?? new List<StudentMealPlanEntry>();
+    var weekStart = (DateTime)ViewBag.WeekStart;
+    var weekEnd = (DateTime)ViewBag.WeekEnd;
+    var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+    var slots = Enum.GetValues<MealSlot>();
 }
 
 <div class="py-4">
     <h1 class="mb-1"><i class="bi bi-egg-fried"></i> Meal Planner</h1>
-    <p class="form-text-hint mb-4">Tell us what you have in the cupboard, and we'll suggest affordable meals you can make.</p>
+    <p class="form-text-hint mb-4">Search affordable meals, add them to your week, or build your own plan manually.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
 
     @if (calorieEstimate != null)
     {
@@ -50,6 +65,133 @@
     }
 
     <div class="section-card mb-4">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+            <div>
+                <h5 class="mb-1">My Weekly Meal Plan</h5>
+                <p class="form-text-hint mb-0">@weekStart.ToString("d MMM") - @weekEnd.ToString("d MMM yyyy")</p>
+            </div>
+            <span class="status-badge status-active">@myMealPlan.Count saved meal(s)</span>
+        </div>
+
+        @if (!myMealPlan.Any())
+        {
+            <p class="text-muted mb-0">No meals planned yet. Add one manually below, or search ingredients and add a suggestion.</p>
+        }
+        else
+        {
+            @foreach (var day in days)
+            {
+                var entriesForDay = myMealPlan.Where(m => m.Day == day).OrderBy(m => m.Slot).ToList();
+                if (!entriesForDay.Any()) { continue; }
+
+                <h6 class="mt-3 mb-2">@day</h6>
+                <div class="row g-2">
+                    @foreach (var entry in entriesForDay)
+                    {
+                        <div class="col-lg-6">
+                            <div class="border rounded p-3 h-100">
+                                <form asp-action="UpdateEntry" method="post">
+                                    <input type="hidden" name="id" value="@entry.Id" />
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                        <span class="status-badge status-pending">@entry.Slot</span>
+                                        <span class="form-text-hint">~R@(entry.EstimatedCostRand.ToString("0"))</span>
+                                    </div>
+                                    <label class="form-label">Meal</label>
+                                    <input name="mealName" class="form-control mb-2" value="@entry.MealName" />
+                                    <label class="form-label">Notes</label>
+                                    <input name="notes" class="form-control mb-2" value="@entry.Notes" />
+                                    <div class="row g-2">
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">kcal</label>
+                                            <input name="caloriesKcal" type="number" min="0" class="form-control" value="@entry.CaloriesKcal" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">Protein</label>
+                                            <input name="proteinG" type="number" min="0" class="form-control" value="@entry.ProteinG" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">Carbs</label>
+                                            <input name="carbsG" type="number" min="0" class="form-control" value="@entry.CarbsG" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">Fat</label>
+                                            <input name="fatG" type="number" min="0" class="form-control" value="@entry.FatG" />
+                                        </div>
+                                    </div>
+                                    <label class="form-label mt-2">Estimated cost</label>
+                                    <input name="estimatedCostRand" type="number" min="0" step="0.01" class="form-control mb-3" value="@entry.EstimatedCostRand" />
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">Save Changes</button>
+                                </form>
+                                <form asp-action="DeleteEntry" method="post" class="mt-2">
+                                    <input type="hidden" name="id" value="@entry.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <div class="section-card mb-4">
+        <h5 class="mb-3">Add a Meal Manually</h5>
+        <form asp-action="AddManual" method="post">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Day</label>
+                    <select name="day" class="form-control">
+                        @foreach (var day in days)
+                        {
+                            <option value="@day">@day</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Meal slot</label>
+                    <select name="slot" class="form-control">
+                        @foreach (var slot in slots)
+                        {
+                            <option value="@slot">@slot</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Meal name</label>
+                    <input name="mealName" class="form-control" placeholder="e.g. Chicken salad wrap" required />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <input name="notes" class="form-control" placeholder="Optional prep notes" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">kcal</label>
+                    <input name="caloriesKcal" type="number" min="0" class="form-control" value="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Protein</label>
+                    <input name="proteinG" type="number" min="0" class="form-control" value="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Carbs</label>
+                    <input name="carbsG" type="number" min="0" class="form-control" value="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Fat</label>
+                    <input name="fatG" type="number" min="0" class="form-control" value="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Cost</label>
+                    <input name="estimatedCostRand" type="number" min="0" step="0.01" class="form-control" value="0" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-gradient w-100">Add Meal</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="section-card mb-4">
         <form asp-action="Suggest" method="post" class="d-flex gap-2 align-items-end flex-wrap">
             <div class="flex-grow-1">
                 <label class="form-label">Ingredients you have (comma-separated)</label>
@@ -71,7 +213,30 @@
                 </div>
                 <p class="mb-1 form-text-hint">Ingredients: @string.Join(", ", match.Recipe.Ingredients)</p>
                 <p class="mb-1 form-text-hint">@match.Recipe.CaloriesKcal kcal &middot; @(match.Recipe.ProteinG)g protein &middot; @(match.Recipe.CarbsG)g carbs &middot; @(match.Recipe.FatG)g fat</p>
-                <p class="mb-0">@match.Recipe.Instructions</p>
+                <p class="mb-3">@match.Recipe.Instructions</p>
+                <form asp-action="AddSuggestion" method="post" class="d-flex gap-2 flex-wrap align-items-end">
+                    <input type="hidden" name="recipeName" value="@match.Recipe.Name" />
+                    <input type="hidden" name="ingredients" value="@ingredients" />
+                    <div>
+                        <label class="form-label">Day</label>
+                        <select name="day" class="form-control">
+                            @foreach (var day in days)
+                            {
+                                <option value="@day">@day</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Meal slot</label>
+                        <select name="slot" class="form-control">
+                            @foreach (var slot in slots)
+                            {
+                                <option value="@slot">@slot</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">Add to My Week</button>
+                </form>
             </div>
         }
     }

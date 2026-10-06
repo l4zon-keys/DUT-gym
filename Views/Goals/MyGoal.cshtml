@@ -41,6 +41,12 @@
         @{
             var daysThisWeek = (int)ViewBag.DaysThisWeek;
             var streak = (int)ViewBag.Streak;
+            var visitsThisMonth = (int)ViewBag.VisitsThisMonth;
+            var certificateRequiredVisits = (int)ViewBag.CertificateRequiredVisits;
+            var certificateEligible = (bool)ViewBag.CertificateEligible;
+            var certificateHalfwayVisits = Math.Max(1, certificateRequiredVisits / 2);
+            var certificateProgress = Math.Min(100, (int)(100.0 * visitsThisMonth / certificateRequiredVisits));
+            var certificateRemainingVisits = Math.Max(0, certificateRequiredVisits - visitsThisMonth);
         }
         <div class="d-flex gap-2 flex-wrap mt-2">
             @if (streak >= 3)
@@ -53,12 +59,74 @@
             }
         </div>
 
-        @if ((bool)ViewBag.CertificateEligible)
-        {
-            <div class="mt-3">
-                <a asp-action="Certificate" class="btn btn-gradient">View Certificate</a>
+        <div class="mt-4 p-3 rounded border">
+            <div class="d-flex justify-content-between gap-3 flex-wrap align-items-start">
+                <div>
+                    <h5 class="mb-1">My Certificate</h5>
+                    <p class="form-text-hint mb-2">
+                        Complete @certificateRequiredVisits gym visits in the current month to unlock your Certificate of Consistency.
+                    </p>
+                    <div class="progress-track mb-2">
+                        <div class="progress-fill" style="width:@certificateProgress%"></div>
+                    </div>
+                    <p class="form-text-hint mb-0">
+                        @visitsThisMonth / @certificateRequiredVisits visits completed this month
+                        @if (!certificateEligible)
+                        {
+                            <span>- @certificateRemainingVisits more visit(s) to unlock</span>
+                        }
+                    </p>
+                </div>
+                <span class="status-badge @(certificateEligible ? "status-active" : "status-pending")">
+                    @(certificateEligible ? "Unlocked" : "In Progress")
+                </span>
             </div>
-        }
+
+            <div class="mt-3">
+                <h6 class="mb-2">Certificate Timeline</h6>
+                <div class="info-row">
+                    <span class="info-label">1. Month started</span>
+                    <span class="info-value">Tracking active</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">2. Reach @certificateHalfwayVisits visits</span>
+                    <span class="info-value">
+                        <span class="status-badge @(visitsThisMonth >= certificateHalfwayVisits ? "status-active" : "status-pending")">
+                            @(visitsThisMonth >= certificateHalfwayVisits ? "Done" : "Pending")
+                        </span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">3. Reach @certificateRequiredVisits visits</span>
+                    <span class="info-value">
+                        <span class="status-badge @(certificateEligible ? "status-active" : "status-pending")">
+                            @(certificateEligible ? "Done" : $"{certificateRemainingVisits} left")
+                        </span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">4. View or download certificate</span>
+                    <span class="info-value">
+                        <span class="status-badge @(certificateEligible ? "status-active" : "status-pending")">
+                            @(certificateEligible ? "Available" : "Locked")
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+                @if (certificateEligible)
+                {
+                    <a asp-action="Certificate" class="btn btn-gradient">View My Certificate</a>
+                    <a asp-action="DownloadCertificate" class="btn btn-outline-primary">Download Certificate</a>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-gradient" disabled>View My Certificate</button>
+                    <button type="button" class="btn btn-outline-primary" disabled>Download Certificate</button>
+                }
+            </div>
+        </div>
     </div>
 
     @if (Model == null)
