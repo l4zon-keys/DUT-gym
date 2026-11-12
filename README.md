@@ -60,7 +60,7 @@ The application was developed using the following technologies:
 | CSS3            | Styling and user interface design                         |
 | JavaScript      | Client-side interactivity and dynamic functionality       |
 | Local Database  | Data storage and management during local development      |
-| Microsoft Azure | Cloud deployment and hosting of the deployed application  |
+
 
 ## System Architecture
 
@@ -81,12 +81,6 @@ The application was developed to address several challenges associated with trad
 * Encourage fitness consistency through goal tracking and gamification.
 * Provide accessible fitness and nutrition guidance.
 * Introduce a more convenient and digitally connected gym experience.
-
-## Deployment
-
-The application has a deployed version hosted through Microsoft Azure.
-
-**Live Application:** 
 
 ## Getting Started
 
